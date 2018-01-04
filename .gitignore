@@ -8,3 +8,6 @@ bin/
 scratch/
 *.log
 .burrow
+
+abi/
+epm.output.json
