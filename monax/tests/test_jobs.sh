@@ -86,7 +86,7 @@ test_setup(){
 
   echo -e "Default Key =>\t\t\t\t$key1_addr"
   echo -e "Backup Key =>\t\t\t\t$key2_addr"
-  sleep 5 # boot time
+  sleep 3 # boot time
 
   echo "Setup complete"
   echo ""
@@ -119,16 +119,21 @@ perform_tests(){
   echo ""
   goto_base
   apps=($1*/)
-  for app in "${apps[@]}"
+  repeats=${2:-1}
+  # Useful for soak testing/generating background requests to trigger concurrency issues
+  for rep in `seq ${repeats}`
   do
-    run_test ${app}
-
-    # Set exit code properly
-    test_exit=$?
-    if [ ${test_exit} -ne 0 ]
-    then
-      break
-    fi
+    for app in "${apps[@]}"
+    do
+      echo "Test: $app, Repeat: $rep"
+      run_test ${app}
+      # Set exit code properly
+      test_exit=$?
+      if [ ${test_exit} -ne 0 ]
+      then
+        break
+      fi
+    done
   done
 }
 
@@ -189,7 +194,7 @@ then
   if ! [ -z "$1" ]
   then
     echo "Running tests beginning with $1..."
-    perform_tests "$1"
+    perform_tests "$1" "$2"
   else
     echo "Running tests that should fail"
     perform_tests_that_should_fail expected-failure

@@ -49,7 +49,7 @@ func RunJobs(do *definitions.Do) error {
 			announce(job.JobName, "Set")
 			job.JobResult, err = SetValJob(job.Set, do)
 
-		// Transaction jobs
+			// Transaction jobs
 		case job.Send != nil:
 			announce(job.JobName, "Sent")
 			job.JobResult, err = SendJob(job.Send, do)
@@ -69,19 +69,24 @@ func RunJobs(do *definitions.Do) error {
 			announce(job.JobName, "Rebond")
 			job.JobResult, err = RebondJob(job.Rebond, do)
 
-		// Contracts jobs
+			// Contracts jobs
 		case job.Deploy != nil:
 			announce(job.JobName, "Deploy")
 			job.JobResult, err = DeployJob(job.Deploy, do)
 		case job.Call != nil:
-			announce(job.JobName, "Call")
-			job.JobResult, job.JobVars, err = CallJob(job.Call, do)
-			if len(job.JobVars) != 0 {
-				for _, theJob := range job.JobVars {
-					log.WithField("=>", fmt.Sprintf("%s,%s", theJob.Name, theJob.Value)).Info("Job Vars")
+			for i := 0; i < 100; i++ {
+				announce(job.JobName, "Call")
+				job.JobResult, job.JobVars, err = CallJob(job.Call, do)
+				if len(job.JobVars) != 0 {
+					for _, theJob := range job.JobVars {
+						log.WithField("=>", fmt.Sprintf("%s,%s", theJob.Name, theJob.Value)).Info("Job Vars")
+					}
+				}
+				if err != nil {
+					return err
 				}
 			}
-		// State jobs
+			// State jobs
 		case job.RestoreState != nil:
 			announce(job.JobName, "RestoreState")
 			job.JobResult, err = RestoreStateJob(job.RestoreState, do)
@@ -89,7 +94,7 @@ func RunJobs(do *definitions.Do) error {
 			announce(job.JobName, "DumpState")
 			job.JobResult, err = DumpStateJob(job.DumpState, do)
 
-		// Test jobs
+			// Test jobs
 		case job.QueryAccount != nil:
 			announce(job.JobName, "QueryAccount")
 			job.JobResult, err = QueryAccountJob(job.QueryAccount, do)
@@ -115,7 +120,6 @@ func RunJobs(do *definitions.Do) error {
 		if err != nil {
 			return err
 		}
-
 	}
 
 	postProcess(do)
