@@ -74,17 +74,15 @@ func RunJobs(do *definitions.Do) error {
 			announce(job.JobName, "Deploy")
 			job.JobResult, err = DeployJob(job.Deploy, do)
 		case job.Call != nil:
-			for i := 0; i < 100; i++ {
-				announce(job.JobName, "Call")
-				job.JobResult, job.JobVars, err = CallJob(job.Call, do)
-				if len(job.JobVars) != 0 {
-					for _, theJob := range job.JobVars {
-						log.WithField("=>", fmt.Sprintf("%s,%s", theJob.Name, theJob.Value)).Info("Job Vars")
-					}
+			announce(job.JobName, "Call")
+			job.JobResult, job.JobVars, err = CallJob(job.Call, do)
+			if len(job.JobVars) != 0 {
+				for _, theJob := range job.JobVars {
+					log.WithField("=>", fmt.Sprintf("%s,%s", theJob.Name, theJob.Value)).Info("Job Vars")
 				}
-				if err != nil {
-					return err
-				}
+			}
+			if err != nil {
+				return err
 			}
 			// State jobs
 		case job.RestoreState != nil:

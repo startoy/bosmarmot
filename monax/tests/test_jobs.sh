@@ -71,9 +71,12 @@ test_setup(){
     ${keys_bin} server --port ${keys_port} --dir keys > "$keys_log" 2>&1 &
     keys_pid=$!
 
+    sleep 1
     echo "Starting Burrow with tendermint port: $tendermint_port, tm RPC port: $rpc_tm_port"
     ${burrow_bin} 2> "$burrow_log" &
     burrow_pid=$!
+
+    sleep 2
   else
     echo "Not booting Burrow or keys, but expecting Burrow to be running with tm RPC on port $rpc_tm_port and keys"\
         "to be running on port $keys_port"
