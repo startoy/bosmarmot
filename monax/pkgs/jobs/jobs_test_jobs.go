@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"strconv"
 
+	acm "github.com/hyperledger/burrow/account"
+	"github.com/hyperledger/burrow/client"
+	"github.com/hyperledger/burrow/logging/loggers"
 	"github.com/monax/bosmarmot/monax/definitions"
 	"github.com/monax/bosmarmot/monax/log"
 	"github.com/monax/bosmarmot/monax/pkgs/abi"
 	"github.com/monax/bosmarmot/monax/util"
-	acm "github.com/hyperledger/burrow/account"
-	"github.com/hyperledger/burrow/client"
-	"github.com/hyperledger/burrow/logging/loggers"
 )
 
 func QueryContractJob(query *definitions.QueryContract, do *definitions.Do) (string, []*definitions.Variable, error) {

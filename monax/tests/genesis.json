@@ -20,25 +20,9 @@
       "Permissions": {
         "Base": {
           "Perms": 2118,
-          "SetBit": 2118
+          "SetBit": 16383
         },
-        "Roles": null
-      }
-    },
-    {
-      "Address": "7E4B5A8F808F519E4F688A34E2734C1CD2D1C869",
-      "PublicKey": {
-        "type": "ed25519",
-        "data": "C20EC01E14DF5A8C3B79771A2B6DAF063541D4E5735AD762C6DF2BF4585C91AA"
-      },
-      "Amount": 9999999999,
-      "Name": "Participant_1",
-      "Permissions": {
-        "Base": {
-          "Perms": 2118,
-          "SetBit": 2118
-        },
-        "Roles": null
+        "Roles": []
       }
     },
     {
@@ -54,7 +38,7 @@
           "Perms": 16383,
           "SetBit": 16383
         },
-        "Roles": null
+        "Roles": []
       }
     }
   ],

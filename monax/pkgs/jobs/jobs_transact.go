@@ -186,17 +186,6 @@ func PermissionJob(perm *definitions.Permission, do *definitions.Do) (string, er
 	log.Debug("Marmots Deny: ", perm.Role)
 	log.Debug("Action: ", perm.Action)
 	// Populate the transaction appropriately
-	var args []string
-	switch perm.Action {
-	case "setGlobal":
-		args = []string{perm.PermissionFlag, perm.Value}
-	case "setBase":
-		args = []string{perm.Target, perm.PermissionFlag, perm.Value}
-	case "unsetBase":
-		args = []string{perm.Target, perm.PermissionFlag}
-	case "addRole", "removeRole":
-		args = []string{perm.Target, perm.Role}
-	}
 
 	// Don't use pubKey if account override
 	var oldKey string
@@ -211,7 +200,8 @@ func PermissionJob(perm *definitions.Permission, do *definitions.Do) (string, er
 
 	monaxNodeClient := client.NewBurrowNodeClient(do.ChainURL, loggers.NewNoopInfoTraceLogger())
 	monaxKeyClient := keys.NewKeyClient(do.Signer, loggers.NewNoopInfoTraceLogger())
-	tx, err := rpc.Permissions(monaxNodeClient, monaxKeyClient, do.PublicKey, perm.Source, perm.Nonce, perm.Action, args)
+	tx, err := rpc.Permissions(monaxNodeClient, monaxKeyClient, do.PublicKey, perm.Source, perm.Nonce, perm.Action,
+		perm.Target, perm.PermissionFlag, perm.Role, perm.Value)
 	if err != nil {
 		return util.MintChainErrorHandler(do, err)
 	}
