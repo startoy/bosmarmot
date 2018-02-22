@@ -3,9 +3,9 @@ package commands
 import (
 	"fmt"
 
+	keys2 "github.com/hyperledger/burrow/keys"
 	"github.com/monax/bosmarmot/monax/keys"
 	"github.com/monax/bosmarmot/monax/util"
-	keys2 "github.com/hyperledger/burrow/keys"
 	"github.com/spf13/cobra"
 )
 
@@ -33,15 +33,15 @@ by using the [--save] flag or by running [monax keys export ADDR].`,
 var keysList = &cobra.Command{
 	Use:   "ls",
 	Short: "list keys on host",
-	Long: `list keys on host`,
-	Run: ListKeys,
+	Long:  `list keys on host`,
+	Run:   ListKeys,
 }
 
 var healthCheck = &cobra.Command{
 	Use:   "alive",
 	Short: "returns 0 if there is a live keys host running 1 if it does not",
-	Long: ``,
-	Run: HealthCheck,
+	Long:  ``,
+	Run:   HealthCheck,
 }
 
 func buildKeysCommand() {
@@ -74,4 +74,3 @@ func HealthCheck(cmd *cobra.Command, args []string) {
 	err := keyClient.HealthCheck()
 	util.IfExit(err)
 }
-
