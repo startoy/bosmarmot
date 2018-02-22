@@ -278,7 +278,7 @@ func coreConvert(addr string) ([]byte, error) {
 	privKeyWithType = append(privKeyWithType, privKey)
 
 	privVal := &privValidator{
-		Address: []byte(addr),
+		Address: addrB,
 		PubKey:  pubKeyWithType,
 		PrivKey: privKeyWithType,
 	}

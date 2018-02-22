@@ -24,22 +24,15 @@ package crypto
 import (
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/monax/bosmarmot/keys/crypto/helpers"
 	"github.com/monax/bosmarmot/keys/crypto/randentropy"
 	"github.com/tendermint/ed25519"
+	"github.com/tendermint/go-crypto"
 	uuid "github.com/wayn3h0/go-uuid"
 )
-
-// TODO: [Silas] Currently launching a keys instance via InitKeyClient() in bosmarmot/monax. This is really a
-// convenience but it means two versions of the secp256k1 library are pulled in by the cgo linker and they duplicate
-// certain symbols, furthermore they are incompatible versions so I cannot easily resolve. I am punting on this until
-// the long term future of this code is clearer.
-var secp256k1NotImplementedError error = errors.New("secp256k1 support has been disabled in Bosmarmot due to CGO " +
-	"linking issues arising for alternative versions of libsecp256k1 being used by go-ethereum and keys")
 
 type InvalidCurveErr string
 
@@ -147,19 +140,6 @@ const (
 	AddrTypeSha3
 )
 
-func AddressFromPub(addrType AddrType, pub []byte) (addr []byte) {
-	switch addrType {
-	case AddrTypeRipemd160:
-		// let tendermint/binary handle because
-		// it encodes the type byte ...
-	case AddrTypeRipemd160Sha256:
-		addr = Ripemd160(Sha256(pub))
-	case AddrTypeSha3:
-		addr = Sha3(pub[1:])[12:]
-	}
-	return
-}
-
 //-----------------------------------------------------------------------------
 // main key struct and functions (sign, pubkey, verify)
 
@@ -173,7 +153,7 @@ type Key struct {
 func NewKey(typ KeyType) (*Key, error) {
 	switch typ.CurveType {
 	case CurveTypeSecp256k1:
-		return newKeySecp256k1(typ.AddrType), nil
+		return newKeySecp256k1(typ.AddrType, crypto.GenPrivKeySecp256k1())
 	case CurveTypeEd25519:
 		return newKeyEd25519(typ.AddrType), nil
 	default:
@@ -210,6 +190,21 @@ func (k *Key) Pubkey() ([]byte, error) {
 		return pubKeyEd25519(k)
 	}
 	return nil, InvalidCurveErr(k.Type.CurveType)
+}
+
+func (k *Key) GoCryptoPrivKey() (crypto.PrivKey, error) {
+	switch k.Type.CurveType {
+	case CurveTypeSecp256k1:
+		var privKey crypto.PrivKeySecp256k1
+		copy(privKey[:], k.PrivateKey)
+		return privKey.Wrap(), nil
+	case CurveTypeEd25519:
+		var privKey crypto.PrivKeyEd25519
+		copy(privKey[:], k.PrivateKey)
+		return privKey.Wrap(), nil
+	}
+	return crypto.PrivKey{}, InvalidCurveErr(k.Type.CurveType)
+
 }
 
 func Verify(curveType CurveType, hash, sig, pub []byte) (bool, error) {
@@ -306,16 +301,38 @@ func IsValidKeyJson(j []byte) []byte {
 // main utility functions for each key type (new, pub, sign, verify)
 // TODO: run all sorts of length and validity checks
 
-func newKeySecp256k1(addrType AddrType) *Key {
-	//pub, priv := secp256k1.GenerateKeyPair()
-	//id, _ := uuid.NewRandom()
-	//return &Key{
-	//	Id:         id,
-	//	Type:       KeyType{CurveTypeSecp256k1, addrType},
-	//	Address:    AddressFromPub(addrType, pub),
-	//	PrivateKey: priv,
-	//}
-	return nil
+func newKeySecp256k1(addrType AddrType, privKey crypto.PrivKeySecp256k1) (*Key, error) {
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return nil, err
+	}
+	pubKey, ok := privKey.PubKey().Unwrap().(crypto.PubKeySecp256k1)
+	if !ok {
+		return nil, fmt.Errorf("unwrapped PubKey does not appear to be secp246k1")
+	}
+
+	privKey.PubKey().Address()
+
+	var address []byte
+	switch addrType {
+	case AddrTypeRipemd160:
+		// let tendermint/binary handle because
+		// it encodes the type byte ...
+		address = pubKey.Address()
+	case AddrTypeRipemd160Sha256:
+		address = Ripemd160(Sha256(pubKey[:]))
+	case AddrTypeSha3:
+		address = Sha3(pubKey[1:])[12:]
+	default:
+		return nil, fmt.Errorf("address type %v not recognised", addrType)
+	}
+
+	return &Key{
+		Id:         id,
+		Type:       KeyType{CurveTypeSecp256k1, addrType},
+		Address:    address,
+		PrivateKey: privKey[:],
+	}, nil
 }
 
 func newKeyEd25519(addrType AddrType) *Key {
@@ -325,18 +342,7 @@ func newKeyEd25519(addrType AddrType) *Key {
 }
 
 func keyFromPrivSecp256k1(addrType AddrType, priv []byte) (*Key, error) {
-	//pub, err := secp256k1.GeneratePubKey(priv)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//id, _ := uuid.NewRandom()
-	//return &Key{
-	//	Id:         id,
-	//	Type:       KeyType{CurveTypeSecp256k1, addrType},
-	//	Address:    AddressFromPub(addrType, pub),
-	//	PrivateKey: priv,
-	//}, nil
-	return nil, secp256k1NotImplementedError
+	return newKeySecp256k1(addrType, crypto.GenPrivKeySecp256k1FromSecret(priv))
 }
 
 func keyFromPrivEd25519(addrType AddrType, priv []byte) (*Key, error) {
@@ -354,8 +360,15 @@ func keyFromPrivEd25519(addrType AddrType, priv []byte) (*Key, error) {
 }
 
 func pubKeySecp256k1(k *Key) ([]byte, error) {
-	//return secp256k1.GeneratePubKey(k.PrivateKey)
-	return nil, secp256k1NotImplementedError
+	privKey, err := k.GoCryptoPrivKey()
+	if err != nil {
+		return nil, err
+	}
+	pubKey, ok := privKey.PubKey().Unwrap().(crypto.PubKeySecp256k1)
+	if !ok {
+		return nil, fmt.Errorf("unwrapped PubKey does not appear to be secp246k1")
+	}
+	return pubKey[:], nil
 }
 
 func pubKeyEd25519(k *Key) ([]byte, error) {
@@ -367,8 +380,15 @@ func pubKeyEd25519(k *Key) ([]byte, error) {
 }
 
 func signSecp256k1(k *Key, hash []byte) ([]byte, error) {
-	//return secp256k1.Sign(hash, k.PrivateKey)
-	return nil, secp256k1NotImplementedError
+	privKey, err := k.GoCryptoPrivKey()
+	if err != nil {
+		return nil, err
+	}
+	signature, ok := privKey.Sign(hash).Unwrap().(crypto.SignatureSecp256k1)
+	if !ok {
+		return nil, fmt.Errorf("unwrapped Signature does not appear to be secp246k1")
+	}
+	return signature[:], nil
 }
 
 func signEd25519(k *Key, hash []byte) ([]byte, error) {
@@ -381,19 +401,9 @@ func signEd25519(k *Key, hash []byte) ([]byte, error) {
 }
 
 func verifySigSecp256k1(hash, sig, pubOG []byte) (bool, error) {
-	//pub, err := secp256k1.RecoverPubkey(hash, sig)
-	//if err != nil {
-	//	return false, err
-	//}
-	//
-	//if bytes.Compare(pub, pubOG) != 0 {
-	//	return false, fmt.Errorf("Recovered pub key does not match. Got %X, expected %X", pub, pubOG)
-	//}
-	//
-	//// TODO: validate recovered pub!
-	//
-	//return true, nil
-	return false, secp256k1NotImplementedError
+	var pubKey crypto.PubKeySecp256k1
+	copy(pubKey[:], pubOG)
+	return pubKey.VerifyBytes(hash, crypto.SignatureSecp256k1(sig).Wrap()), nil
 }
 
 func verifySigEd25519(hash, sig, pub []byte) (bool, error) {
