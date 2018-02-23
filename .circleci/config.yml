@@ -2,7 +2,7 @@
 # have no special meaning, they just exist so I can alias them and import them
 # in later blocks
 defaults: &defaults
-  working_directory: /go/src/github.com/hyperledger/burrow
+  working_directory: /go/src/github.com/monax/bosmarmot
   docker:
     - image: circleci/golang:1.9.3
 
@@ -28,12 +28,11 @@ jobs:
       - run: make ensure_vendor
 
 workflows:
+
   version: 2
   test_and_release:
     jobs:
-      - test:
-
-      - test_integration:
-
-      - ensure_vendor:
+      - test
+      - test_integration
+      - ensure_vendor
 

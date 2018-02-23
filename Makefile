@@ -8,6 +8,7 @@
 #
 
 SHELL := /bin/bash
+REPO := $(shell pwd)
 GOFILES_NOVENDOR := $(shell find . -type f -name '*.go' -not -path "**/vendor/*")
 GOPACKAGES_NOVENDOR := $(shell go list ./...)
 BURROW_COMMIT := "f9af620db411d7340621e3723c9573461d227c8d"
@@ -22,6 +23,7 @@ version:
 # Run goimports (also checks formatting) first display output first, then check for success
 .PHONY: check
 check:
+	@go get golang.org/x/tools/cmd/goimports
 	@goimports -l -d ${GOFILES_NOVENDOR}
 	@goimports -l ${GOFILES_NOVENDOR} | read && echo && \
 	echo "Your marmot has found a problem with the formatting style of the code."\
@@ -59,6 +61,11 @@ build_burrow:
 # Build all the things
 .PHONY: build
 build:	build_bin
+
+# erase vendor wipes the full vendor directory
+.PHONY: erase_vendor
+erase_vendor:
+	rm -rf ${REPO}/vendor/
 
 # install vendor uses dep to install vendored dependencies
 .PHONY: reinstall_vendor
