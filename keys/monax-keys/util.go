@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/monax/bosmarmot/keys/common"
 	"github.com/howeyc/gopass"
+	"github.com/monax/bosmarmot/keys/common"
 )
 
 //------------------------------------------------------------

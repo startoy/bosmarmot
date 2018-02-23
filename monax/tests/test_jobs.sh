@@ -71,9 +71,12 @@ test_setup(){
     ${keys_bin} server --port ${keys_port} --dir keys > "$keys_log" 2>&1 &
     keys_pid=$!
 
+    sleep 1
     echo "Starting Burrow with tendermint port: $tendermint_port, tm RPC port: $rpc_tm_port"
     ${burrow_bin} 2> "$burrow_log" &
     burrow_pid=$!
+
+    sleep 2
   else
     echo "Not booting Burrow or keys, but expecting Burrow to be running with tm RPC on port $rpc_tm_port and keys"\
         "to be running on port $keys_port"
@@ -86,7 +89,7 @@ test_setup(){
 
   echo -e "Default Key =>\t\t\t\t$key1_addr"
   echo -e "Backup Key =>\t\t\t\t$key2_addr"
-  sleep 5 # boot time
+  sleep 3 # boot time
 
   echo "Setup complete"
   echo ""
@@ -101,6 +104,8 @@ run_test(){
   echo
   cat readme.md
   echo
+  echo \$ ${bos_bin} pkgs do --keys="http://:$keys_port" --chain-url="tcp://:$rpc_tm_port" --address "$key1_addr" \
+    --set "addr1=$key1_addr" --set "addr2=$key2_addr" --set "addr2_pub=$key2_pub" #--debug
   ${bos_bin} pkgs do --keys="http://:$keys_port" --chain-url="tcp://:$rpc_tm_port" --address "$key1_addr" \
     --set "addr1=$key1_addr" --set "addr2=$key2_addr" --set "addr2_pub=$key2_pub" #--debug
   test_exit=$?
@@ -119,16 +124,21 @@ perform_tests(){
   echo ""
   goto_base
   apps=($1*/)
-  for app in "${apps[@]}"
+  repeats=${2:-1}
+  # Useful for soak testing/generating background requests to trigger concurrency issues
+  for rep in `seq ${repeats}`
   do
-    run_test ${app}
-
-    # Set exit code properly
-    test_exit=$?
-    if [ ${test_exit} -ne 0 ]
-    then
-      break
-    fi
+    for app in "${apps[@]}"
+    do
+      echo "Test: $app, Repeat: $rep"
+      run_test ${app}
+      # Set exit code properly
+      test_exit=$?
+      if [ ${test_exit} -ne 0 ]
+      then
+        break
+      fi
+    done
   done
 }
 
@@ -189,7 +199,7 @@ then
   if ! [ -z "$1" ]
   then
     echo "Running tests beginning with $1..."
-    perform_tests "$1"
+    perform_tests "$1" "$2"
   else
     echo "Running tests that should fail"
     perform_tests_that_should_fail expected-failure

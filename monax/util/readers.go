@@ -6,8 +6,8 @@ import (
 	"os"
 	"path"
 
-	"github.com/monax/bosmarmot/monax/log"
 	"github.com/hyperledger/burrow/client/rpc"
+	"github.com/monax/bosmarmot/monax/log"
 )
 
 // This is a closer function which is called by most of the tx_run functions
@@ -23,7 +23,7 @@ func ReadTxSignAndBroadcast(result *rpc.TxResult, err error) error {
 	}
 
 	// Unpack and display for the user.
-	addr := fmt.Sprintf("%X", result.Address)
+	addr := fmt.Sprintf("%s", result.Address)
 	hash := fmt.Sprintf("%X", result.Hash)
 	blkHash := fmt.Sprintf("%X", result.BlockHash)
 	ret := fmt.Sprintf("%X", result.Return)

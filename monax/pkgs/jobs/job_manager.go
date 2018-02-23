@@ -115,7 +115,6 @@ func RunJobs(do *definitions.Do) error {
 		if err != nil {
 			return err
 		}
-
 	}
 
 	postProcess(do)

@@ -38,7 +38,8 @@ func RunPackage(do *definitions.Do) error {
 
 		// if it still cannot be found, abort
 		if _, err := os.Stat(do.YAMLPath); os.IsNotExist(err) {
-			return fmt.Errorf("could not find jobs file (%s), ensure correct used of the --file flag")
+			return fmt.Errorf("could not find jobs file (%s), ensure correct used of the --file flag",
+				do.YAMLPath)
 		}
 
 		if do.BinPath == "./bin" {

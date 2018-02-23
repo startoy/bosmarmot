@@ -1,0 +1,39 @@
+# Some resuable sections, note the top-level keys 'defaults' and 'tag_filters'
+# have no special meaning, they just exist so I can alias them and import them
+# in later blocks
+defaults: &defaults
+  working_directory: /go/src/github.com/hyperledger/burrow
+  docker:
+    - image: circleci/golang:1.9.3
+
+# Start of CircleCI 2.0 config
+version: 2
+jobs:
+  test:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: make test
+
+  test_integration:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: make test_integration
+
+  ensure_vendor:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: make ensure_vendor
+
+workflows:
+  version: 2
+  test_and_release:
+    jobs:
+      - test:
+
+      - test_integration:
+
+      - ensure_vendor:
+

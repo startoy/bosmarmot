@@ -15,7 +15,7 @@ func Test_matchInstanceName(t *testing.T) {
 		{
 			"",
 			args{
-				objectName: "contracts/storage.sol:SimpleConstructorArray",
+				objectName:     "contracts/storage.sol:SimpleConstructorArray",
 				deployInstance: "SimpleConstructorArray",
 			},
 			true,
@@ -23,7 +23,7 @@ func Test_matchInstanceName(t *testing.T) {
 		{
 			"",
 			args{
-				objectName: "storage.sol:SimpleConstructorArray",
+				objectName:     "storage.sol:SimpleConstructorArray",
 				deployInstance: "simpleConstructorArray",
 			},
 			true,
@@ -31,7 +31,7 @@ func Test_matchInstanceName(t *testing.T) {
 		{
 			"",
 			args{
-				objectName: "SimpleConstructorArray",
+				objectName:     "SimpleConstructorArray",
 				deployInstance: "simpleconstructorarray",
 			},
 			true,
@@ -39,7 +39,7 @@ func Test_matchInstanceName(t *testing.T) {
 		{
 			"",
 			args{
-				objectName: "",
+				objectName:     "",
 				deployInstance: "Simpleconstructorarray",
 			},
 			false,
@@ -47,7 +47,7 @@ func Test_matchInstanceName(t *testing.T) {
 		{
 			"",
 			args{
-				objectName: "SimpleConstructorArray:",
+				objectName:     "SimpleConstructorArray:",
 				deployInstance: "SimpleConstructorArray",
 			},
 			false,
@@ -55,7 +55,7 @@ func Test_matchInstanceName(t *testing.T) {
 		{
 			"",
 			args{
-				objectName: ":",
+				objectName:     ":",
 				deployInstance: "SimpleConstructorArray",
 			},
 			false,
