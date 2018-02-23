@@ -9,6 +9,7 @@ import (
 	"github.com/monax/bosmarmot/keys/common"
 	"github.com/monax/bosmarmot/keys/crypto"
 	ed25519 "github.com/monax/bosmarmot/keys/crypto/helpers"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -69,11 +70,9 @@ func testSignAndVerify(t *testing.T, typ string) {
 	}
 
 	res, err := coreVerify(typ, toHex(pub), toHex(hash), toHex(sig))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if res != true {
-		t.Fatalf("Signature (type %s) failed to verify.\nResponse: %v\nSig %x, Hash %x, Addr %x", typ, res, sig, hash, addr)
+	if !assert.NoError(t, err) || !assert.True(t, res) {
+		t.Errorf("Signature (type %s) failed to verify.\nResponse: %v\nSig %x, Hash %x, Addr %x",
+			typ, res, sig, hash, addr)
 	}
 }
 

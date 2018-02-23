@@ -8,16 +8,6 @@ import (
 	"time"
 )
 
-func Test0Key(t *testing.T) {
-	t.Skip()
-	//key, _ := hex.DecodeString("1111111111111111111111111111111111111111111111111111111111111111")
-	//
-	//p, err := secp256k1.GeneratePubKey(key)
-	//addr := Sha3(p[1:])[12:]
-	//fmt.Printf("%x\n", p)
-	//fmt.Printf("%v %x\n", err, addr)
-}
-
 // These tests are sanity checks.
 // They should ensure that we don't e.g. use Sha3-224 instead of Sha3-256
 // and that the sha3 library uses keccak-f permutation.

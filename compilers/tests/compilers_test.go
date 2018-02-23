@@ -36,10 +36,10 @@ contract c {
 		t.Fatal(err)
 	}
 	if req.Libraries != "" {
-		t.Errorf("Expected empty libraries, got ", req.Libraries)
+		t.Errorf("Expected empty libraries, got %s", req.Libraries)
 	}
 	if req.Language != "sol" {
-		t.Errorf("Expected Solidity file, got ", req.Language)
+		t.Errorf("Expected Solidity file, got %s", req.Language)
 	}
 	if req.Optimize != false {
 		t.Errorf("Expected false optimize, got true")
@@ -78,7 +78,7 @@ func TestLocalMulti(t *testing.T) {
 		Error:   "",
 	}
 	util.ClearCache(config.SolcScratchPath)
-	resp, err := perform.RequestCompile("", "contractImport1.sol", false, "")
+	resp, err := perform.RequestCompile("contractImport1.sol", false, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -122,7 +122,7 @@ func TestLocalSingle(t *testing.T) {
 		Error:   "",
 	}
 	util.ClearCache(config.SolcScratchPath)
-	resp, err := perform.RequestCompile("", "simpleContract.sol", false, "")
+	resp, err := perform.RequestCompile("simpleContract.sol", false, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -139,7 +139,7 @@ func TestFaultyContract(t *testing.T) {
 	actualOutput, err := exec.Command("solc", "--combined-json", "bin,abi", "faultyContract.sol").CombinedOutput()
 	err = json.Unmarshal(actualOutput, expectedSolcResponse)
 	t.Log(expectedSolcResponse.Error)
-	resp, err := perform.RequestCompile("", "faultyContract.sol", false, "")
+	resp, err := perform.RequestCompile("faultyContract.sol", false, "")
 	t.Log(resp.Error)
 	if err != nil {
 		if expectedSolcResponse.Error != resp.Error {

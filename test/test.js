@@ -2,7 +2,7 @@ var assert = require('assert');
 var fs = require('fs-extra');
 var monax = require('@monax/legacy-contracts');
 
-burrowURL = "http://localhost:1337/rpc" 
+burrowURL = "http://localhost:1339/rpc"
 accountPath = "./account.json"
 contractPath = "./GetSet.bin"
 contractABI = "./GetSet.abi"

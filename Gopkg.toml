@@ -1,82 +1,13 @@
-
-# Gopkg.toml example
-#
-# Refer to https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md
-# for detailed Gopkg.toml documentation.
-#
-# required = ["github.com/user/thing/cmd/thing"]
-# ignored = ["github.com/user/project/pkgX", "bitbucket.org/user/project/pkgA/pkgY"]
-#
-# [[constraint]]
-#   name = "github.com/user/project"
-#   version = "1.0.0"
-#
-# [[constraint]]
-#   name = "github.com/user/project2"
-#   branch = "dev"
-#   source = "github.com/myfork/project2"
-#
-# [[override]]
-#  name = "github.com/x/y"
-#  version = "2.4.0"
-
-
-[[constraint]]
-  name = "github.com/BurntSushi/toml"
-  version = "0.3.0"
-
-[[constraint]]
-  name = "github.com/ethereum/go-ethereum"
-  version = "=1.6.1"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/howeyc/gopass"
+[prune]
+  unused-packages = true
+  go-tests = true
+  non-go = true
 
 [[constraint]]
   name = "github.com/hyperledger/burrow"
-  version = "0.17.1"
+  branch = "develop"
 
+# Geth version we currently depend on for ABI
 [[constraint]]
-  name = "github.com/monax/cli"
-  version = "0.18.0"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/monax/keys"
-
-[[constraint]]
-  name = "github.com/rs/cors"
-  version = "1.2.0"
-
-[[constraint]]
-  name = "github.com/spf13/cobra"
-  version = "0.0.1"
-
-[[constraint]]
-  name = "github.com/spf13/viper"
-  version = "1.0.0"
-
-[[constraint]]
-  name = "github.com/stretchr/testify"
-  version = "1.1.4"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/tendermint/ed25519"
-
-[[constraint]]
-  name = "github.com/tendermint/go-wire"
-  version = "0.7.1"
-
-[[constraint]]
-  name = "github.com/wayn3h0/go-uuid"
-  version = "2.2.1"
-
-[[constraint]]
-  branch = "master"
-  name = "golang.org/x/crypto"
-
-[[constraint]]
-  branch = "master"
-  name = "golang.org/x/sys"
+  name = "github.com/ethereum/go-ethereum"
+  version = "=1.6.1"

@@ -10,6 +10,28 @@ ValidatorAddress = "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B"
   URL = "http://localhost:48002"
 
 [RPC]
+  [RPC.V0]
+    [RPC.V0.Server]
+      ChainId = ""
+      [RPC.V0.Server.bind]
+        address = ""
+        port = 1339
+      [RPC.V0.Server.TLS]
+        tls = false
+        cert_path = ""
+        key_path = ""
+      [RPC.V0.Server.CORS]
+        enable = false
+        allow_credentials = false
+        max_age = 0
+      [RPC.V0.Server.HTTP]
+        json_rpc_endpoint = "/rpc"
+      [RPC.V0.Server.web_socket]
+        websocket_endpoint = "/socketrpc"
+        max_websocket_sessions = 50
+        read_buffer_size = 4096
+        write_buffer_size = 4096
+
   [RPC.TM]
     ListenAddress = ":48003"
 
@@ -26,15 +48,11 @@ ValidatorAddress = "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B"
         [Logging.RootSink.Sinks.Sinks.Transform]
           TransformType = "filter"
           [Logging.RootSink.Sinks.Sinks.Transform.FilterConfig]
-            FilterMode = "include_when_any_match"
+            FilterMode = "include_when_all_match"
 
             [[Logging.RootSink.Sinks.Sinks.Transform.FilterConfig.Predicates]]
               KeyRegex = "log_channel"
               ValueRegex = "Info"
-
-            [[Logging.RootSink.Sinks.Sinks.Transform.FilterConfig.Predicates]]
-              KeyRegex = "component"
-              ValueRegex = "ABCI_App"
 
         [[Logging.RootSink.Sinks.Sinks.Sinks]]
           [Logging.RootSink.Sinks.Sinks.Sinks.Transform]
@@ -43,13 +61,16 @@ ValidatorAddress = "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B"
               FilterMode = "exclude_when_any_match"
 
               [[Logging.RootSink.Sinks.Sinks.Sinks.Transform.FilterConfig.Predicates]]
+                KeyRegex = "component"
+                ValueRegex = "Tendermint"
+
+              [[Logging.RootSink.Sinks.Sinks.Sinks.Transform.FilterConfig.Predicates]]
                 KeyRegex = "module"
                 ValueRegex = "p2p"
 
               [[Logging.RootSink.Sinks.Sinks.Sinks.Transform.FilterConfig.Predicates]]
                 KeyRegex = "module"
-                ValueRegex = "consensus"
+                ValueRegex = "mempool"
           [Logging.RootSink.Sinks.Sinks.Sinks.Output]
             OutputType = "stderr"
-            Format = "terminal"
-
+            Format = "json"

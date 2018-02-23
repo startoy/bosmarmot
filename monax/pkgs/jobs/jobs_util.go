@@ -1,11 +1,11 @@
 package jobs
 
 import (
+	acm "github.com/hyperledger/burrow/account"
 	"github.com/monax/bosmarmot/monax/definitions"
 	"github.com/monax/bosmarmot/monax/keys"
 	"github.com/monax/bosmarmot/monax/log"
 	"github.com/monax/bosmarmot/monax/util"
-	acm "github.com/hyperledger/burrow/account"
 )
 
 func SetAccountJob(account *definitions.Account, do *definitions.Do) (string, error) {

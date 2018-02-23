@@ -131,7 +131,7 @@ jobs:
       function: hasBase
       data: 
         - $addr2
-        - 14846
+        - 14847
 
 - name: assertBase2
   assert:
@@ -182,4 +182,4 @@ jobs:
   assert:
       key: $checkBase4
       relation: eq
-      val: "true"
+      val: "false"

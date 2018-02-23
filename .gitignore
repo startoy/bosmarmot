@@ -9,5 +9,6 @@ scratch/
 *.log
 .burrow
 
+addrbook.json
 abi/
 epm.output.json
