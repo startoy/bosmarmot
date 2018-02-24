@@ -248,6 +248,12 @@
   revision = "00c29f56e2386353d58c599509e8dc3801b0d716"
 
 [[projects]]
+  name = "github.com/monax/relic"
+  packages = ["."]
+  revision = "f24b36b5f6f7f5c6034c89a6a47de1bfbbf7787e"
+  version = "v1.1.0"
+
+[[projects]]
   name = "github.com/pelletier/go-toml"
   packages = ["."]
   revision = "acdc4509485b587f5e675510c4f2c63e90ff68a8"
@@ -613,6 +619,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "880cfd287e35b5b1eaf9e727b037ae3b99ee8ed53810ad20d342fd2b96ddcd66"
+  inputs-digest = "3af2e3535f4a63013c0e692bf9dd30de2da2cc748e97869eb32ec5b17ef194ee"
   solver-name = "gps-cdcl"
   solver-version = 1

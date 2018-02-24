@@ -9,32 +9,30 @@
 
 SHELL := /bin/bash
 REPO := $(shell pwd)
-GOFILES_NOVENDOR := $(shell find . -type f -name '*.go' -not -path "**/vendor/*")
+GO_FILES := $(shell go list -f "{{.Dir}}" ./...)
 GOPACKAGES_NOVENDOR := $(shell go list ./...)
-BURROW_COMMIT := "f9af620db411d7340621e3723c9573461d227c8d"
 
-# Install dependencies and also clear out vendor (we should do this in CI)
+### Integration test binaries
+# We make the relevant targets for building/fetching these depend on the Makefile itself - if unnecessary rebuilds
+# when changing the Makefile become a problem we can move these values into individual files elsewhere and make those
+# files specific targets for their respective binaries
 
-# Print version
-.PHONY: version
-version:
-	@go run ./release/cmd/version/main.go
-
+### Tests and checks
 # Run goimports (also checks formatting) first display output first, then check for success
 .PHONY: check
 check:
 	@go get golang.org/x/tools/cmd/goimports
-	@goimports -l -d ${GOFILES_NOVENDOR}
-	@goimports -l ${GOFILES_NOVENDOR} | read && echo && \
+	@goimports -l -d ${GO_FILES}
+	@goimports -l ${GO_FILES} | read && echo && \
 	echo "Your marmot has found a problem with the formatting style of the code."\
 	 1>&2 && exit 1 || true
 
 # Just fix it
 .PHONY: fix
 fix:
-	@goimports -l -w ${GOFILES_NOVENDOR}
+	@goimports -l -w ${GO_FILES}
 
-# Run tests
+# Run testsGOFILES_NOVENDOR
 .PHONY:	test
 test: check
 	@go test ${GOPACKAGES_NOVENDOR}
@@ -46,21 +44,10 @@ test_dev:
 
 # Run tests including integration tests
 .PHONY:	test_integration
-test_integration: build_bin build_burrow
+test_integration: build_bin bin/burrow bin/solc
 	@scripts/bin_wrapper.sh monax/tests/test_jobs.sh
 
-.PHONY: build_bin
-build_bin:
-	@go build -o bin/bos ./monax/cmd/bos
-	@go build -o bin/monax-keys ./keys/cmd/monax-keys
-
-.PHONY: build_burrow
-build_burrow:
-	@scripts/build_burrow.sh ${BURROW_COMMIT}
-
-# Build all the things
-.PHONY: build
-build:	build_bin
+### Vendoring
 
 # erase vendor wipes the full vendor directory
 .PHONY: erase_vendor
@@ -80,30 +67,63 @@ reinstall_vendor: erase_vendor
 ensure_vendor: reinstall_vendor
 	@scripts/is_checkout_dirty.sh
 
+### Builds
+
+.PHONY: build_bin
+build_bin:
+	@go build -o bin/bos ./monax/cmd/bos
+	@go build -o bin/monax-keys ./keys/cmd/monax-keys
+
+bin/solc: ./scripts/deps/solc.sh
+	@wget -O bin/solc $(shell ./scripts/deps/solc.sh)
+	@chmod +x bin/solc
+	# Update timestamp to avoid rebuild
+	@touch bin/solc
+
+bin/burrow: ./scripts/deps/burrow.sh
+	@GOPATH="${REPO}/.gopath_burrow" \
+	scripts/go_build_revision.sh \
+	https://github.com/hyperledger/burrow.git \
+	github.com/hyperledger/burrow \
+	$(shell ./scripts/deps/burrow.sh) \
+	cmd/burrow \
+	bin/burrow
+
+# Build all the things
+.PHONY: build
+build:	build_bin
+
 # Build binaries for all architectures
 .PHONY: build_dist
 build_dist:
 	@goreleaser --rm-dist --skip-publish --skip-validate
 
-# Generate full changelog of all release notes
-changelog.md: ./release/release.go
-	@go run ./release/cmd/changelog/main.go > changelog.md
-
-# Generated release notes for this version
-notes.md: ./release/release.go
-	@go run ./release/cmd/notes/main.go > notes.md
-
 # Do all available tests and checks then build
 .PHONY: build_ci
 build_ci: check test build
 
+### Release and versioning
+
+# Print version
+.PHONY: version
+version:
+	@go run ./project/cmd/version/main.go
+
+# Generate full changelog of all release notes
+CHANGELOG.md: ./project/history.go ./project/cmd/changelog/main.go
+	@go run ./project/cmd/changelog/main.go > CHANGELOG.md
+
+# Generated release notes for this version
+NOTES.md:  ./project/history.go ./project/cmd/notes/main.go
+	@go run ./project/cmd/notes/main.go > NOTES.md
+
 # Tag the current HEAD commit with the current release defined in
 # ./release/release.go
 .PHONY: tag_release
-tag_release: test check changelog.md build_bin
+tag_release: test check CHANGELOG.md build_bin
 	@scripts/tag_release.sh
 
 # If the checked out commit is tagged with a version then release to github
 .PHONY: release
-release: notes.md
+release: NOTES.md
 	@scripts/release.sh

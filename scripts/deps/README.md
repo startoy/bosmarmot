@@ -1,0 +1,2 @@
+## deps
+This directory contains reference objects for various non-go dependencies of Bosmarmot (typically for integration tests). Each file is a script that when run emits a pointer to the dependency in some appropriate format (e.g. commit hash or URL).

@@ -3,6 +3,12 @@
   go-tests = true
   non-go = true
 
+  [[prune.project]]
+    name = "github.com/ethereum/go-ethereum"
+    # Otherwise secp256k1.h excluded and test compile fails
+    unused-packages = false
+    non-go = false
+
 [[constraint]]
   name = "github.com/hyperledger/burrow"
   branch = "develop"

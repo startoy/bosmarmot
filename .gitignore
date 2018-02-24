@@ -5,9 +5,10 @@ scratch/
 bin/
 
 # tests
-scratch/
 *.log
 .burrow
 
 addrbook.json
 epm.output.json
+.gopath_burrow
+monax/tests/**/abi/

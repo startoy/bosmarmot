@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
-export PATH=bin/:$PATH
+# Use keys, burrow, solc binaries in the repo's bin directory
+export PATH=$(readlink -f bin):$PATH
 
 "$@"

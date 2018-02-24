@@ -10,7 +10,7 @@ import (
 	"github.com/monax/bosmarmot/monax/definitions"
 	"github.com/monax/bosmarmot/monax/log"
 	"github.com/monax/bosmarmot/monax/util"
-	"github.com/monax/bosmarmot/release"
+	"github.com/monax/bosmarmot/project"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +23,7 @@ var MonaxCmd = &cobra.Command{
 Made with <3 by Monax Industries.
 
 Complete documentation is available at https://monax.io/docs
-` + "\nVersion:\n  " + release.Version(),
+` + "\nVersion:\n  " + project.History.CurrentVersion().String(),
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.WarnLevel)
 		if do.Verbose {
@@ -32,7 +32,7 @@ Complete documentation is available at https://monax.io/docs
 			log.SetLevel(log.DebugLevel)
 		}
 
-		// Don't try to connect to Docker for informational
+		// Don't try to connect to Docker for informationalm
 		// or bug fixing commands.
 		switch cmd.Use {
 		case "version", "update", "man":

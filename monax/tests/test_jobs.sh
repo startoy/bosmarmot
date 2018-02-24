@@ -19,6 +19,9 @@
 bos_bin=${bos_bin:-bos}
 burrow_bin=${burrow_bin:-burrow}
 keys_bin=${keys_bin:-monax-keys}
+# currently we must use 'solc' as hardcoded by compilers
+solc_bin=solc
+
 # If false we will not try to start keys or Burrow and expect them to be running
 boot=${boot:-true}
 debug=${debug:-false}
@@ -64,6 +67,13 @@ test_setup(){
   echo "Setting up..."
   cd "$script_dir"
 
+  echo
+  echo "Using binaries:"
+  echo "  $(type ${solc_bin})"
+  echo "  $(type ${bos_bin})"
+  echo "  $(type ${keys_bin})"
+  echo "  $(type ${burrow_bin})"
+  echo
   # start test chain
   if [[ "$boot" = true ]]; then
     echo "Booting keys then Burrow.."
@@ -73,10 +83,10 @@ test_setup(){
 
     sleep 1
     echo "Starting Burrow with tendermint port: $tendermint_port, tm RPC port: $rpc_tm_port"
+    rm -rf ${burrow_root}
     ${burrow_bin} 2> "$burrow_log" &
     burrow_pid=$!
 
-    sleep 2
   else
     echo "Not booting Burrow or keys, but expecting Burrow to be running with tm RPC on port $rpc_tm_port and keys"\
         "to be running on port $keys_port"
@@ -89,7 +99,7 @@ test_setup(){
 
   echo -e "Default Key =>\t\t\t\t$key1_addr"
   echo -e "Backup Key =>\t\t\t\t$key2_addr"
-  sleep 3 # boot time
+  sleep 4 # boot time
 
   echo "Setup complete"
   echo ""
@@ -165,8 +175,8 @@ perform_tests_that_should_fail(){
 test_teardown(){
   echo "Cleaning up..."
   if [[ "$boot" = true ]]; then
-    kill $burrow_pid
-    kill $keys_pid
+    kill ${burrow_pid}
+    kill ${keys_pid}
     rm -rf "$burrow_root"
   fi
   echo ""
@@ -178,7 +188,7 @@ test_teardown(){
     echo "Tests complete. Tests are Red. :("
     echo "Failure in: $app"
   fi
-  exit $test_exit
+  exit ${test_exit}
 }
 
 # ---------------------------------------------------------------------------
@@ -196,6 +206,8 @@ test_setup
 
 if [[ "$1" != "setup" ]]
 then
+  # Cleanup
+  trap test_teardown EXIT
   if ! [ -z "$1" ]
   then
     echo "Running tests beginning with $1..."
@@ -207,12 +219,4 @@ then
     echo "Running tests that should pass"
     perform_tests app
   fi
-fi
-
-# ---------------------------------------------------------------------------
-# Cleaning up
-
-if [[ "$1" != "setup" ]]
-then
-  test_teardown
 fi
