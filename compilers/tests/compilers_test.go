@@ -11,6 +11,7 @@ import (
 	"github.com/monax/bosmarmot/compilers/perform"
 	"github.com/monax/bosmarmot/compilers/util"
 	"github.com/monax/bosmarmot/monax/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRequestCreation(t *testing.T) {
@@ -58,8 +59,7 @@ func TestLocalMulti(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	output := strings.TrimSpace(string(actualOutput))
-	err = json.Unmarshal([]byte(output), expectedSolcResponse)
+	err = json.Unmarshal([]byte(strings.TrimSpace(string(actualOutput))), expectedSolcResponse)
 
 	respItemArray := make([]perform.ResponseItem, 0)
 
@@ -98,7 +98,8 @@ func TestLocalSingle(t *testing.T) {
 	util.ClearCache(config.SolcScratchPath)
 	expectedSolcResponse := definitions.BlankSolcResponse()
 
-	actualOutput, err := exec.Command("solc", "--combined-json", "bin,abi", "simpleContract.sol").Output()
+	shellCmd := exec.Command("solc", "--combined-json", "bin,abi", "simpleContract.sol")
+	actualOutput, err := shellCmd.Output()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -126,9 +127,7 @@ func TestLocalSingle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(expectedResponse, resp) {
-		t.Errorf("Got incorrect response, expected %v, \n\n got %v", expectedResponse, resp)
-	}
+	assert.Equal(t, expectedResponse, resp)
 	util.ClearCache(config.SolcScratchPath)
 }
 

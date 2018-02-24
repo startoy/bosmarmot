@@ -6,6 +6,7 @@ import (
 
 	"github.com/monax/bosmarmot/keys/common"
 
+	"github.com/monax/bosmarmot/project"
 	"github.com/spf13/cobra"
 )
 
@@ -83,6 +84,13 @@ func BuildKeysCommand() {
 	EKeys.AddCommand(serverCmd)
 	EKeys.AddCommand(importCmd)
 	EKeys.AddCommand(convertCmd)
+	EKeys.AddCommand(&cobra.Command{
+		Use:   "version",
+		Short: "Print Version",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println(project.History.CurrentVersion().String())
+		},
+	})
 	addKeysFlags()
 }
 
