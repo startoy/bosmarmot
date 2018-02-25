@@ -34,8 +34,8 @@ fix:
 
 # Run testsGOFILES_NOVENDOR
 .PHONY:	test
-test: check
-	@go test ${GOPACKAGES_NOVENDOR}
+test: check bin/solc
+	@scripts/bin_wrapper.sh go test ${GOPACKAGES_NOVENDOR}
 
 # Run tests for development (noisy)
 .PHONY:	test_dev
@@ -75,9 +75,8 @@ build_bin:
 	@go build -o bin/monax-keys ./keys/cmd/monax-keys
 
 bin/solc: ./scripts/deps/solc.sh
-	@wget -O bin/solc $(shell ./scripts/deps/solc.sh)
-	@chmod +x bin/solc
-	# Update timestamp to avoid rebuild
+	@mkdir -p bin
+	@scripts/deps/solc.sh bin/solc
 	@touch bin/solc
 
 bin/burrow: ./scripts/deps/burrow.sh

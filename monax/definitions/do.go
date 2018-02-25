@@ -3,6 +3,7 @@ package definitions
 type Do struct {
 	Quiet         bool   `mapstructure:"," json:"," yaml:"," toml:","`
 	Verbose       bool   `mapstructure:"," json:"," yaml:"," toml:","`
+	Version       bool   `mapstructure:"," json:"," yaml:"," toml:","`
 	Debug         bool   `mapstructure:"," json:"," yaml:"," toml:","`
 	Overwrite     bool   `mapstructure:"," json:"," yaml:"," toml:","`
 	Address       string `mapstructure:"," json:"," yaml:"," toml:","`

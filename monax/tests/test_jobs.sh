@@ -69,10 +69,10 @@ test_setup(){
 
   echo
   echo "Using binaries:"
-  echo "  $(type ${solc_bin})"
-  echo "  $(type ${bos_bin})"
-  echo "  $(type ${keys_bin})"
-  echo "  $(type ${burrow_bin})"
+  echo "  $(type ${solc_bin}) (version: $(${solc_bin} --version))"
+  echo "  $(type ${bos_bin}) (version: $(${bos_bin} version))"
+  echo "  $(type ${keys_bin}) (version: $(${keys_bin} version))"
+  echo "  $(type ${burrow_bin}) (version: $(${burrow_bin} --version))"
   echo
   # start test chain
   if [[ "$boot" = true ]]; then
@@ -175,8 +175,8 @@ perform_tests_that_should_fail(){
 test_teardown(){
   echo "Cleaning up..."
   if [[ "$boot" = true ]]; then
-    kill ${burrow_pid}
-    kill ${keys_pid}
+    kill ${burrow_pid} > /dev/null
+    kill ${keys_pid} > /dev/null
     rm -rf "$burrow_root"
   fi
   echo ""

@@ -9,9 +9,12 @@ OUTPUT=$5
 
 PROJECT_PATH="${GOPATH}/src/${PROJECT}"
 
-$(cd "$PROJECT_PATH" > /dev/null) || git clone ${REPO} ${PROJECT_PATH}
+# Do initial checkout if it doesn't exist
+$(cd "$PROJECT_PATH" 2> /dev/null) || git clone ${REPO} ${PROJECT_PATH}
 pushd "$PROJECT_PATH"
+# Attempt to checkout the specified revision
 git fetch --all
 git checkout ${REVISION}
 popd
+# Build
 go build -o ${OUTPUT} ${PROJECT}/${PACKAGE}

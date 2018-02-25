@@ -15,14 +15,13 @@ import (
 )
 
 // Defining the root command
-var MonaxCmd = &cobra.Command{
-	Use:   "monax COMMAND [FLAG ...]",
-	Short: "The Ecosystem Application Platform",
-	Long: `Monax is an application platform for building, testing, maintaining, and operating applications built to run on an ecosystem level.
+var BosCmd = &cobra.Command{
+	Use:   "bos COMMAND [FLAG ...]",
+	Short: "bos is an application for deploying and testing Hyperledger Burrow chains",
+	Long: `bos is an application for deploying and testing Hyperledger Burrow chains,
 
 Made with <3 by Monax Industries.
 
-Complete documentation is available at https://monax.io/docs
 ` + "\nVersion:\n  " + project.History.CurrentVersion().String(),
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.WarnLevel)
@@ -48,18 +47,25 @@ func Execute() {
 	InitializeConfig()
 	AddGlobalFlags()
 	AddCommands()
-	util.IfExit(MonaxCmd.Execute())
+	util.IfExit(BosCmd.Execute())
 }
 
 // Define the commands
 func AddCommands() {
 	buildPackagesCommand()
 	buildKeysCommand()
-	MonaxCmd.AddCommand(Packages)
-	MonaxCmd.AddCommand(Keys)
+	BosCmd.AddCommand(Packages)
+	BosCmd.AddCommand(Keys)
+	BosCmd.AddCommand(&cobra.Command{
+		Use:   "version",
+		Short: "Print Version",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println(project.History.CurrentVersion().String())
+		},
+	})
 
-	MonaxCmd.SetHelpCommand(Help)
-	MonaxCmd.SetHelpTemplate(helpTemplate)
+	BosCmd.SetHelpCommand(Help)
+	BosCmd.SetHelpTemplate(helpTemplate)
 }
 
 // Global Do struct
@@ -68,9 +74,9 @@ var do *definitions.Do
 // Flags that are to be used by commands are handled by the Do struct
 // Define the persistent commands (globals)
 func AddGlobalFlags() {
-	MonaxCmd.PersistentFlags().BoolVarP(&do.Verbose, "verbose", "v", false, "verbose output")
-	MonaxCmd.PersistentFlags().BoolVarP(&do.Debug, "debug", "d", false, "debug level output")
-	MonaxCmd.PersistentFlags().StringVarP(&mkeys.KeysDir, "keys-path", "", config.KeysPath,
+	BosCmd.PersistentFlags().BoolVarP(&do.Verbose, "verbose", "v", false, "verbose output")
+	BosCmd.PersistentFlags().BoolVarP(&do.Debug, "debug", "d", false, "debug level output")
+	BosCmd.PersistentFlags().StringVarP(&mkeys.KeysDir, "keys-path", "", config.KeysPath,
 		"root monax-keys directory that will be used to start keys if an instance is not already running")
 }
 
