@@ -44,7 +44,12 @@ test_dev:
 
 # Run tests including integration tests
 .PHONY:	test_integration
-test_integration: build_bin bin/burrow bin/solc
+test_integration: build_bin bin/solc bin/burrow
+	@scripts/bin_wrapper.sh monax/tests/test_jobs.sh
+
+# Use a provided/local Burrow
+.PHONY:	test_integration_no_burrow
+test_integration_no_burrow: build_bin bin/solc
 	@scripts/bin_wrapper.sh monax/tests/test_jobs.sh
 
 ### Vendoring
@@ -78,6 +83,7 @@ bin/solc: ./scripts/deps/solc.sh
 	@mkdir -p bin
 	@scripts/deps/solc.sh bin/solc
 	@touch bin/solc
+
 
 bin/burrow: ./scripts/deps/burrow.sh
 	@GOPATH="${REPO}/.gopath_burrow" \
