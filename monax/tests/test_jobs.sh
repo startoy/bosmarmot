@@ -177,10 +177,10 @@ test_teardown(){
   if [[ "$boot" = true ]]; then
     kill ${burrow_pid}
     echo "Waiting for burrow to shutdown..."
-    wait ${burrow_pid} 2> /dev/null
+    wait ${burrow_pid} 2> /dev/null &
     kill ${keys_pid}
     echo "Waiting for keys to shutdown..."
-    wait ${keys_pid} 2> /dev/null
+    wait ${keys_pid} 2> /dev/null &
     rm -rf "$burrow_root"
   fi
   echo ""
