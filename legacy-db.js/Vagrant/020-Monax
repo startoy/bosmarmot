@@ -1,0 +1,9 @@
+#!/bin/sh -l
+set -o errexit
+set -o xtrace
+
+go get -d github.com/monax/cli/cmd/monax
+cd $GOPATH/src/github.com/monax/cli/cmd/monax
+git checkout $BRANCH
+go install
+monax init --yes

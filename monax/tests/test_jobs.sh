@@ -78,7 +78,7 @@ test_setup(){
   if [[ "$boot" = true ]]; then
     echo "Booting keys then Burrow.."
     echo "Starting keys on port $keys_port"
-    ${keys_bin} server --port ${keys_port} --dir keys > "$keys_log" 2>&1 &
+    ${keys_bin} server --port ${keys_port} --dir keys 2> "$keys_log" &
     keys_pid=$!
 
     sleep 1
@@ -175,8 +175,12 @@ perform_tests_that_should_fail(){
 test_teardown(){
   echo "Cleaning up..."
   if [[ "$boot" = true ]]; then
-    kill ${burrow_pid} > /dev/null
-    kill ${keys_pid} > /dev/null
+    kill ${burrow_pid}
+    echo "Waiting for burrow to shutdown..."
+    wait ${burrow_pid} 2> /dev/null
+    kill ${keys_pid}
+    echo "Waiting for keys to shutdown..."
+    wait ${keys_pid} 2> /dev/null
     rm -rf "$burrow_root"
   fi
   echo ""

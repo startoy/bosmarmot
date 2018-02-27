@@ -1,0 +1,250 @@
+{
+  "it": {
+    "listens to an event from a contract": [
+      {
+        "input": {
+          "done": false,
+          "value": {
+            "method": "burrow.transactAndHold",
+            "params": {
+              "priv_key": "166C035FF8BCAF6E9DDF14382CD2A138FB34CEE33CCE0E087BFEF6CEEBB68EE55DE8D6E336389A135E14844DCF910549996E7E36922B1964AEBBE3CEFBE741F8",
+              "address": "",
+              "data": "606060405260608060106000396000f3606060405260e060020a60003504633bdab8bf8114601a575b005b601873ffffffffffffffffffffffffffffffffffffffff331660609081527f50d7c806d0f7913f321946784dee176a42aa55b5dd83371fc57dcedf659085e090602090a156",
+              "gas_limit": 1000000,
+              "fee": 1
+            },
+            "id": "cw+VOmrThbJm42DVSSDjHqAokyUYXro9768E7qUF7dg=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "output": {
+          "done": false,
+          "value": {
+            "result": {
+              "call_data": {
+                "caller": "39602B4EC9F1A2F2B68FD8567B075D90549E7134",
+                "callee": "5F57E8F5DF5F0D94F75EE74B68880BEDF8A32631",
+                "data": "606060405260608060106000396000F3606060405260E060020A60003504633BDAB8BF8114601A575B005B601873FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF331660609081527F50D7C806D0F7913F321946784DEE176A42AA55B5DD83371FC57DCEDF659085E090602090A156",
+                "value": 0,
+                "gas": 999985
+              },
+              "origin": "39602B4EC9F1A2F2B68FD8567B075D90549E7134",
+              "tx_id": "ABEF98773BF640BE9CCBEE95203BCC02EA66D4EA",
+              "return": "606060405260E060020A60003504633BDAB8BF8114601A575B005B601873FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF331660609081527F50D7C806D0F7913F321946784DEE176A42AA55B5DD83371FC57DCEDF659085E090602090A156",
+              "exception": ""
+            },
+            "id": "cw+VOmrThbJm42DVSSDjHqAokyUYXro9768E7qUF7dg=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "input": {
+          "done": false,
+          "value": {
+            "method": "burrow.eventSubscribe",
+            "params": {
+              "event_id": "Log/5F57E8F5DF5F0D94F75EE74B68880BEDF8A32631"
+            },
+            "id": "+FHy1XboJ50Gump9LOO6EisoyJ3FkhGx9YGALypg3AU=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "output": {
+          "done": false,
+          "value": {
+            "result": {
+              "sub_id": "0"
+            },
+            "id": "+FHy1XboJ50Gump9LOO6EisoyJ3FkhGx9YGALypg3AU=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "input": {
+          "done": false,
+          "value": {
+            "method": "burrow.transactAndHold",
+            "params": {
+              "priv_key": "166C035FF8BCAF6E9DDF14382CD2A138FB34CEE33CCE0E087BFEF6CEEBB68EE55DE8D6E336389A135E14844DCF910549996E7E36922B1964AEBBE3CEFBE741F8",
+              "address": "5F57E8F5DF5F0D94F75EE74B68880BEDF8A32631",
+              "data": "3bdab8bf",
+              "gas_limit": 1000000,
+              "fee": 1
+            },
+            "id": "ba1rRYyNx+XnmOlY4oIlDuHGRhxrCtY1xz+owUCnyr8=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "output": {
+          "done": false,
+          "value": {
+            "result": {
+              "call_data": {
+                "caller": "39602B4EC9F1A2F2B68FD8567B075D90549E7134",
+                "callee": "5F57E8F5DF5F0D94F75EE74B68880BEDF8A32631",
+                "data": "3BDAB8BF",
+                "value": 0,
+                "gas": 999956
+              },
+              "origin": "39602B4EC9F1A2F2B68FD8567B075D90549E7134",
+              "tx_id": "3673F57FC6DD50B79C113C02075CE9A22F1C61A5",
+              "return": "",
+              "exception": ""
+            },
+            "id": "ba1rRYyNx+XnmOlY4oIlDuHGRhxrCtY1xz+owUCnyr8=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "input": {
+          "done": false,
+          "value": {
+            "method": "burrow.transactAndHold",
+            "params": {
+              "priv_key": "166C035FF8BCAF6E9DDF14382CD2A138FB34CEE33CCE0E087BFEF6CEEBB68EE55DE8D6E336389A135E14844DCF910549996E7E36922B1964AEBBE3CEFBE741F8",
+              "address": "5F57E8F5DF5F0D94F75EE74B68880BEDF8A32631",
+              "data": "3bdab8bf",
+              "gas_limit": 1000000,
+              "fee": 1
+            },
+            "id": "pZHaJHUk2gnkx/GJJp1Ntxr6X0xfy2c6j73dbyPvIDI=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "output": {
+          "done": false,
+          "value": {
+            "result": {
+              "call_data": {
+                "caller": "39602B4EC9F1A2F2B68FD8567B075D90549E7134",
+                "callee": "5F57E8F5DF5F0D94F75EE74B68880BEDF8A32631",
+                "data": "3BDAB8BF",
+                "value": 0,
+                "gas": 999956
+              },
+              "origin": "39602B4EC9F1A2F2B68FD8567B075D90549E7134",
+              "tx_id": "A6E9BFEFD419F95C88F635A2956102A0D8F04AD9",
+              "return": "",
+              "exception": ""
+            },
+            "id": "pZHaJHUk2gnkx/GJJp1Ntxr6X0xfy2c6j73dbyPvIDI=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "input": {
+          "done": false,
+          "value": {
+            "method": "burrow.eventPoll",
+            "params": {
+              "sub_id": "0"
+            },
+            "id": "MCGMb8b0VUc8b3/hyMGAWDQJnUqE9D9LqAd7g1Zxsds=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "output": {
+          "done": false,
+          "value": {
+            "result": {
+              "events": [
+                {
+                  "address": "0000000000000000000000005F57E8F5DF5F0D94F75EE74B68880BEDF8A32631",
+                  "topics": [
+                    "50D7C806D0F7913F321946784DEE176A42AA55B5DD83371FC57DCEDF659085E0"
+                  ],
+                  "data": "00000000000000000000000039602B4EC9F1A2F2B68FD8567B075D90549E7134",
+                  "height": 1
+                },
+                {
+                  "address": "0000000000000000000000005F57E8F5DF5F0D94F75EE74B68880BEDF8A32631",
+                  "topics": [
+                    "50D7C806D0F7913F321946784DEE176A42AA55B5DD83371FC57DCEDF659085E0"
+                  ],
+                  "data": "00000000000000000000000039602B4EC9F1A2F2B68FD8567B075D90549E7134",
+                  "height": 1
+                }
+              ]
+            },
+            "id": "MCGMb8b0VUc8b3/hyMGAWDQJnUqE9D9LqAd7g1Zxsds=",
+            "jsonrpc": "2.0"
+          }
+        }
+      }
+    ]
+  },
+  "initDir": {
+    "genesis.json": {
+      "genesis_time": "2017-04-27T20:36:03.032Z",
+      "chain_id": "test-event",
+      "params": {
+        "global_permissions": {
+          "base": {
+            "perms": 2302,
+            "set": 16383
+          },
+          "roles": []
+        }
+      },
+      "accounts": [
+        {
+          "address": "39602B4EC9F1A2F2B68FD8567B075D90549E7134",
+          "amount": 99999999999999,
+          "name": "test-event_full_000",
+          "permissions": {
+            "base": {
+              "perms": 16383,
+              "set": 16383
+            },
+            "roles": []
+          }
+        }
+      ],
+      "validators": [
+        {
+          "pub_key": [
+            1,
+            "5DE8D6E336389A135E14844DCF910549996E7E36922B1964AEBBE3CEFBE741F8"
+          ],
+          "amount": 9999999999,
+          "name": "test-event_full_000",
+          "unbond_to": [
+            {
+              "address": "39602B4EC9F1A2F2B68FD8567B075D90549E7134",
+              "amount": 9999999999
+            }
+          ]
+        }
+      ]
+    },
+    "priv_validator.json": {
+      "address": "39602B4EC9F1A2F2B68FD8567B075D90549E7134",
+      "pub_key": [
+        1,
+        "5DE8D6E336389A135E14844DCF910549996E7E36922B1964AEBBE3CEFBE741F8"
+      ],
+      "priv_key": [
+        1,
+        "166C035FF8BCAF6E9DDF14382CD2A138FB34CEE33CCE0E087BFEF6CEEBB68EE55DE8D6E336389A135E14844DCF910549996E7E36922B1964AEBBE3CEFBE741F8"
+      ],
+      "last_height": 0,
+      "last_round": 0,
+      "last_step": 0
+    }
+  },
+  "before": []
+}
