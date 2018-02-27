@@ -121,7 +121,7 @@ DevPipe.prototype.call = function (txPayload, callback) {
     if (error) {
       callback(error)
     } else {
-      callback(null, data.return.toUpperCase())
+      callback(null, data.Return.toUpperCase())
     }
   })
 }

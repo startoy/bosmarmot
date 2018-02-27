@@ -9,10 +9,10 @@
     "url": "https://github.com/monax/legacy-contracts.js/issues"
   },
   "dependencies": {
-    "@monax/legacy-db": "0.16.4",
+    "@monax/legacy-db": "file:../legacy-db.js",
     "@nodeguy/generic": "3.0.0",
     "@nodeguy/type": "0.2.0",
-    "bignumber.js": "debris/bignumber.js#94d7146671b9719e00a09c29b01a691bc85048c2",
+    "bignumber.js": "github:debris/bignumber.js#94d7146671b9719e00a09c29b01a691bc85048c2",
     "bluebird": "3.5.0",
     "crypto-js": "3.1.4",
     "g-functions": "0.3.0",
@@ -24,7 +24,7 @@
   "devDependencies": {
     "@nodeguy/assert": "0.1.1",
     "bundle-dependencies": "1.0.2",
-    "husky": "0.13.2",
+    "fs-extra": "^5.0.0",
     "ink-docstrap": "1.3.0",
     "istanbul": "0.4.5",
     "jsdoc": "3.4.3",
