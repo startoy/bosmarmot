@@ -201,15 +201,15 @@
     "logging/types",
     "permission",
     "permission/types",
+    "project",
     "rpc",
     "rpc/tm",
     "rpc/tm/client",
     "rpc/v0/server",
     "server",
-    "txs",
-    "version"
+    "txs"
   ]
-  revision = "f9af620db411d7340621e3723c9573461d227c8d"
+  revision = "27480073a7b1f1a36cf002720d4879cdbebf7704"
 
 [[projects]]
   name = "github.com/inconshreveable/mousetrap"
@@ -585,12 +585,6 @@
   ]
   revision = "8e4536a86ab602859c20df5ebfd0bd4228d08655"
   version = "v1.10.0"
-
-[[projects]]
-  name = "gopkg.in/fatih/set.v0"
-  packages = ["."]
-  revision = "57907de300222151a123d29255ed17f5ed43fad3"
-  version = "v0.1.0"
 
 [[projects]]
   name = "gopkg.in/go-playground/validator.v8"

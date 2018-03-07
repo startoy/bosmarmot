@@ -48,11 +48,15 @@ ValidatorAddress = "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B"
         [Logging.RootSink.Sinks.Sinks.Transform]
           TransformType = "filter"
           [Logging.RootSink.Sinks.Sinks.Transform.FilterConfig]
-            FilterMode = "include_when_all_match"
+            FilterMode = "include_when_any_match"
 
             [[Logging.RootSink.Sinks.Sinks.Transform.FilterConfig.Predicates]]
               KeyRegex = "log_channel"
               ValueRegex = "Info"
+
+            [[Logging.RootSink.Sinks.Sinks.Transform.FilterConfig.Predicates]]
+              KeyRegex = "component"
+              ValueRegex = "ABCI_App"
 
         [[Logging.RootSink.Sinks.Sinks.Sinks]]
           [Logging.RootSink.Sinks.Sinks.Sinks.Transform]
@@ -70,7 +74,8 @@ ValidatorAddress = "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B"
 
               [[Logging.RootSink.Sinks.Sinks.Sinks.Transform.FilterConfig.Predicates]]
                 KeyRegex = "module"
-                ValueRegex = "mempool"
+                ValueRegex = "consensus"
+
           [Logging.RootSink.Sinks.Sinks.Sinks.Output]
             OutputType = "stderr"
             Format = "json"
