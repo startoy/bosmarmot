@@ -209,7 +209,7 @@
     "server",
     "txs"
   ]
-  revision = "27480073a7b1f1a36cf002720d4879cdbebf7704"
+  revision = "6fab282e256b5eb18fb18aabce30a0e10870ca92"
 
 [[projects]]
   name = "github.com/inconshreveable/mousetrap"
