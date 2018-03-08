@@ -84,6 +84,10 @@ bin/solc: ./scripts/deps/solc.sh
 	@scripts/deps/solc.sh bin/solc
 	@touch bin/solc
 
+scripts/deps/burrow.sh: Gopkg.lock
+	@go get -u github.com/golang/dep/cmd/dep
+	@scripts/deps/burrow-gen.sh > scripts/deps/burrow.sh
+	@chmod +x scripts/deps/burrow.sh
 
 bin/burrow: ./scripts/deps/burrow.sh
 	@GOPATH="${REPO}/.gopath_burrow" \
