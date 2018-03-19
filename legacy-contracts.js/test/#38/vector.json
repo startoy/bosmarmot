@@ -22,18 +22,122 @@
         "output": {
           "done": false,
           "value": {
-            "error": {
-              "code": -32300,
-              "data": {
-                "code": "ECONNREFUSED",
-                "errno": "ECONNREFUSED",
-                "syscall": "connect",
-                "address": "127.0.0.1",
-                "port": 1339
+            "result": {
+              "call_data": {
+                "caller": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
+                "callee": "322A2B9BE53C6AA69CFCFBE09100B41B11434793",
+                "data": "606060405260448060106000396000F3606060405260E060020A60003504633BDAB8BF8114601A575B005B60187F57050AB73F6B9EBDD9F76B8D4997793F48CF956E965EE070551B9CA0BB71584E60006060A156",
+                "value": 0,
+                "gas": 999985
               },
-              "message": "Error: connect ECONNREFUSED 127.0.0.1:1339"
+              "origin": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
+              "tx_id": "AEE6179A3EAB36157170C96D72642058543CA8F7",
+              "return": "606060405260E060020A60003504633BDAB8BF8114601A575B005B60187F57050AB73F6B9EBDD9F76B8D4997793F48CF956E965EE070551B9CA0BB71584E60006060A156",
+              "exception": ""
             },
             "id": "ja4f+OCRbN9AgiUxoIRaxM+ZkqvtgimF0u1ULruCNeU=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "input": {
+          "done": false,
+          "value": {
+            "method": "burrow.eventSubscribe",
+            "params": {
+              "event_id": "Log/322A2B9BE53C6AA69CFCFBE09100B41B11434793"
+            },
+            "id": "rT2nwNq/R5D8qKL95X5DDG5xyt5VAGvHSwKvfGhOkL4=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "output": {
+          "done": false,
+          "value": {
+            "result": {
+              "sub_id": "0"
+            },
+            "id": "rT2nwNq/R5D8qKL95X5DDG5xyt5VAGvHSwKvfGhOkL4=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "input": {
+          "done": false,
+          "value": {
+            "method": "burrow.transactAndHold",
+            "params": {
+              "priv_key": "FBC2514DE7579AC8161F5A4F4B6C8379EC8BF84456D98A62B48CC2938D637E16091CF7750C18B1378284B1AE477D00ABA41EC8EDA96D8CDB6D78156254170706",
+              "address": "322A2B9BE53C6AA69CFCFBE09100B41B11434793",
+              "data": "3bdab8bf",
+              "gas_limit": 1000000,
+              "fee": 1
+            },
+            "id": "exC7f6hJ0n+FgrC2MRF6U+7LK1ojEfabdSoZc3f8A3I=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "output": {
+          "done": false,
+          "value": {
+            "result": {
+              "call_data": {
+                "caller": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
+                "callee": "322A2B9BE53C6AA69CFCFBE09100B41B11434793",
+                "data": "3BDAB8BF",
+                "value": 0,
+                "gas": 999968
+              },
+              "origin": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
+              "tx_id": "53DCF57DF87F1FB132CEDBC4368E7D65AA4229AC",
+              "return": "",
+              "exception": ""
+            },
+            "id": "exC7f6hJ0n+FgrC2MRF6U+7LK1ojEfabdSoZc3f8A3I=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "input": {
+          "done": false,
+          "value": {
+            "method": "burrow.eventPoll",
+            "params": {
+              "sub_id": "0"
+            },
+            "id": "xKqiSFoE8WzJeZqe7sZ9SBTCQd03+Luf/2yy/UPKmik=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "output": {
+          "done": false,
+          "value": {
+            "result": {
+              "events": [
+                {
+                  "Event": "Log/322A2B9BE53C6AA69CFCFBE09100B41B11434793",
+                  "EventDataLog": {
+                    "address": "322A2B9BE53C6AA69CFCFBE09100B41B11434793",
+                    "topics": [
+                      "57050AB73F6B9EBDD9F76B8D4997793F48CF956E965EE070551B9CA0BB71584E"
+                    ],
+                    "data": "",
+                    "height": 15
+                  },
+                  "height": 1
+                }
+              ]
+            },
+            "id": "xKqiSFoE8WzJeZqe7sZ9SBTCQd03+Luf/2yy/UPKmik=",
             "jsonrpc": "2.0"
           }
         }

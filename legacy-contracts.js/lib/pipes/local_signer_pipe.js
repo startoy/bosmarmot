@@ -33,7 +33,7 @@ nUtil.inherits(LSPipe, Pipe)
  */
 LSPipe.prototype.transact = function (txPayload, callback) {
   throw new Error('Local signer transacting has not been implemented yet.')
-    /*
+  /*
     console.log("Calling pipe transact function");
     var that = this;
 

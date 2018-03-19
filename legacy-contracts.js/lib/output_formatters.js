@@ -8,7 +8,7 @@ var BigNumber = require('bignumber.js')
 
 module.exports = {
 
-    /**
+  /**
      * Returns the output as an object with a field 'this.values.name' for each named output param.
      * The raw output is put in 'this.raw'.
      *
@@ -19,7 +19,7 @@ module.exports = {
      */
   json: toObject,
 
-    /**
+  /**
      * Returns the output as an object with a field 'this.values.name' for each named output param.
      * The raw output is put in 'this.raw'.
      *
@@ -29,7 +29,7 @@ module.exports = {
      */
   toObject: toObject,
 
-    /**
+  /**
      * Returns the output an object with a field 'this.values.name' for each named output param.
      * The raw output is put in 'this.raw'.
      *
@@ -42,7 +42,7 @@ module.exports = {
      */
   toObjectDecimal: toObjectDecimal,
 
-    /**
+  /**
      * Returns the output an object with a field 'this.values.name' for each named output param.
      * The raw output is put in 'this.raw'.
      *
@@ -54,7 +54,7 @@ module.exports = {
      */
   jsonStrings: toObjectDecimal,
 
-    /**
+  /**
      * Returns the output an object with a field 'this.values.name' for each named output param.
      * The raw output is put in 'this.raw'.
      *
@@ -90,7 +90,7 @@ module.exports = {
     return outputObj
   },
 
-    /**
+  /**
      * Takes the 'this.values' object from the object returned by 'formatter', json-stringifies it and returns
      * the string. Useful when passing on to some form of stream.
      *
@@ -105,7 +105,7 @@ module.exports = {
     }
   },
 
-    /**
+  /**
      * Takes the 'this.values' object from the object returned by 'formatter', json-stringifies it and returns
      * the string. Useful when passing on to some form of stream.
      *
@@ -120,7 +120,7 @@ module.exports = {
     }
   },
 
-    /**
+  /**
      * Takes the 'this.values' object from the object returned by 'formatter', json-stringifies it and returns
      * the string. Useful when passing on to some form of stream.
      *
@@ -137,7 +137,7 @@ module.exports = {
 }
 
 function toObject (outputSpec, output) {
-    // TODO for now
+  // TODO for now
   if (!(output instanceof Array)) {
     output = [output]
   }

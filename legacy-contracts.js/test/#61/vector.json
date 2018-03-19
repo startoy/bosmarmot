@@ -22,18 +22,48 @@
         "output": {
           "done": false,
           "value": {
-            "error": {
-              "code": -32300,
-              "data": {
-                "code": "ECONNREFUSED",
-                "errno": "ECONNREFUSED",
-                "syscall": "connect",
-                "address": "127.0.0.1",
-                "port": 1339
+            "result": {
+              "call_data": {
+                "caller": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
+                "callee": "F63A819C9F9665A5AC5501C74F59F54868879603",
+                "data": "6060604052604051602080607183395060806040525160008054600160A060020A0319168217905550603D8060346000396000F3606060405260E060020A60003504636D4CE63C8114601A575B005B60005473FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF166060908152602090F300000000000000000000000088977A37D05A4FE86D09E88C88A49C2FCF7D6D8F",
+                "value": 0,
+                "gas": 999937
               },
-              "message": "Error: connect ECONNREFUSED 127.0.0.1:1339"
+              "origin": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
+              "tx_id": "466D667247AE3E4E3BB780A871337BF5616458AE",
+              "return": "606060405260E060020A60003504636D4CE63C8114601A575B005B60005473FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF166060908152602090F3",
+              "exception": ""
             },
             "id": "b4qaSIuLf2PxeJ87Ozv1xmFOhKqOSQx0IJPKt5I/8NY=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "input": {
+          "done": false,
+          "value": {
+            "method": "burrow.call",
+            "params": {
+              "from": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
+              "address": "F63A819C9F9665A5AC5501C74F59F54868879603",
+              "data": "6d4ce63c"
+            },
+            "id": "DNNNhff8d2YkO4PWWqpUKT+jp9Ak0ktqtz1aE5Rwru0=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "output": {
+          "done": false,
+          "value": {
+            "result": {
+              "Return": "00000000000000000000000088977A37D05A4FE86D09E88C88A49C2FCF7D6D8F",
+              "GasUsed": 41
+            },
+            "id": "DNNNhff8d2YkO4PWWqpUKT+jp9Ak0ktqtz1aE5Rwru0=",
             "jsonrpc": "2.0"
           }
         }

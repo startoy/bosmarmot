@@ -33,7 +33,7 @@ describe('#38', function () {
       }
       ).then((secondContract) => {
         return new Promise((resolve, reject) => {
-          secondContract.Event.once(function(error, event) {
+          secondContract.Event.once(function (error, event) {
             if (error) {
               reject(error)
             } else {
@@ -42,7 +42,7 @@ describe('#38', function () {
           })
 
           secondContract.emit()
-        }) 
+        })
       })
     })
   }))

@@ -22,18 +22,59 @@
         "output": {
           "done": false,
           "value": {
-            "error": {
-              "code": -32300,
-              "data": {
-                "code": "ECONNREFUSED",
-                "errno": "ECONNREFUSED",
-                "syscall": "connect",
-                "address": "127.0.0.1",
-                "port": 1339
+            "result": {
+              "call_data": {
+                "caller": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
+                "callee": "09E9FD2261C4F3A71F96AE2C44BFF6D4F3330646",
+                "data": "6060604052608D8060106000396000F3606060405260E060020A600035046338CC48318114602E578063C4B0FBB1146035578063F2C9ECD814605B575B005B6063305B90565B606430606091825273FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF16608052604090F35B608360646032565B73FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF166060908152602090F35B6060908152602090F3",
+                "value": 0,
+                "gas": 999985
               },
-              "message": "Error: connect ECONNREFUSED 127.0.0.1:1339"
+              "origin": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
+              "tx_id": "26F516E041AFBAA7D2D11A9592FD3579EE6A2D09",
+              "return": "606060405260E060020A600035046338CC48318114602E578063C4B0FBB1146035578063F2C9ECD814605B575B005B6063305B90565B606430606091825273FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF16608052604090F35B608360646032565B73FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF166060908152602090F35B6060908152602090F3",
+              "exception": ""
             },
             "id": "Rdfo+vK8qTObk8gwDnwMCEY8mY9iMSryagzGphgi19w=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "input": {
+          "done": false,
+          "value": {
+            "method": "burrow.transactAndHold",
+            "params": {
+              "priv_key": "FBC2514DE7579AC8161F5A4F4B6C8379EC8BF84456D98A62B48CC2938D637E16091CF7750C18B1378284B1AE477D00ABA41EC8EDA96D8CDB6D78156254170706",
+              "address": "09E9FD2261C4F3A71F96AE2C44BFF6D4F3330646",
+              "data": "c4b0fbb1",
+              "gas_limit": 1000000,
+              "fee": 1
+            },
+            "id": "hiV1QW/Yx2kGw2OnadeOctpTXeYGzi4/HAejG6yqer0=",
+            "jsonrpc": "2.0"
+          }
+        }
+      },
+      {
+        "output": {
+          "done": false,
+          "value": {
+            "result": {
+              "call_data": {
+                "caller": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
+                "callee": "09E9FD2261C4F3A71F96AE2C44BFF6D4F3330646",
+                "data": "C4B0FBB1",
+                "value": 0,
+                "gas": 999948
+              },
+              "origin": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
+              "tx_id": "B350327A88F78F6035F5CFAF2CF5C5C6F8199DDF",
+              "return": "000000000000000000000000000000000000000000000000000000000000006400000000000000000000000009E9FD2261C4F3A71F96AE2C44BFF6D4F3330646",
+              "exception": ""
+            },
+            "id": "hiV1QW/Yx2kGw2OnadeOctpTXeYGzi4/HAejG6yqer0=",
             "jsonrpc": "2.0"
           }
         }
