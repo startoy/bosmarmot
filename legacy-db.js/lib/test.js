@@ -46,12 +46,12 @@ const poll = R.curry((action, interval) => {
 })
 
 
-const blockchainUrl = (protocol) => {
+const blockchainUrl = ({protocol = 'ws:', port = '1339', host = 'localhost'}) => {
   return url.format({
-      protocol: protocol,
+      protocol,
       slashes: true,
       hostname: 'localhost',
-      port: '1337',
+      port: port,
       pathname: protocol === 'ws:' ? '/socketrpc' : '/rpc'
     })
 }
@@ -80,43 +80,6 @@ const httpIsAvailable = (url) =>
   ).then(R.always(url))
 
 
-const startBlockchain = (chainDir, {protocol = 'ws:'} = {}) => {
-
-    const genesisFile = path.join(chainDir, 'genesis.json')
-    const configFile  = path.join(chainDir, 'config.toml')
-
-    return exec(`burrow -c ${configFile} -g ${genesisFile}`)
-        .then(() => {
-          const url = blockchainUrl(protocol, name)
-          console.log(`Started blockchain at ${url}.`)
-          return url
-        })
-        .then(protocol === 'ws:' ? webSocketIsAvailable : httpIsAvailable)
-  }
-
-const stopBlockchain = (chainDir) => {
-  return exec('kill $(pgrep burrow)')
-    .then(rmBlockchain(chainDir))
-}
-
-const rmBlockchain = (chainDir) => {
-  burrowDir = path.join(chainDir, '.burrow')
-  return exec(`rm -rf $(burrowDir`)
-    .then(() => {
-      console.log(`Removed blockchain.`)
-    })
-}
-
-const startKeys = (chainDir) => {
-  keysDir = path.join(chainDir, 'keys')
-  return exec(`monax-keys -p 48002 --dir $(chainDir)`)
-}
-
-const stopKeys = () => {
-  return exec('kill $(pgrep monax-keys)')
-}
-
-
 // Base 'class' for different Vector behaviors below.
 const Vector = () => ({
   after: () =>
@@ -127,7 +90,6 @@ const Vector = () => ({
 // Run the tests while recording the conversation with the server.
 const VectorRecord = () => {
   let db
-  let chainDir
   let dir
   let transport
   let vector
@@ -143,31 +105,33 @@ const VectorRecord = () => {
     })
 
   return Object.assign(Vector(), {
-    before: (newDir, newChainDir, options, callback) =>
+    before: (newDir, options, callback) =>
       function () {
         this.timeout(60 * 1000)
-        chainDir = newChainDir
         dir = newDir
 
-        return startKeys(chainDir)
-          .then(() => {return startBlockchain(chainDir, options)})
-          .then((urlString) => {
+        const urlString = blockchainUrl(options)
 
-            vectors.account = Object.assign({}, require(path.join(chainDir, 'account.json')))
+        try {
+          vectors.account = JSON.parse(process.env.account)
+        }
+        catch (err) {
+          return Promise.reject(new Error("Could not parse required account JSON: " + process.env.account + " Make sure you are passing a valid account json string as an env var account='{accountdata}'"))
+        }
 
-            transport = deterministic(jsonRpc.transport(url.parse(urlString)))
-            const {memoized, vector: newVector} = testVector.memoize(transport)
-            vector = newVector
-            db = Burrow.createInstance(memoized)
+        transport = deterministic(jsonRpc.transport(url.parse(urlString)))
+        const {memoized, vector: newVector} = testVector.memoize(transport)
 
-            if (callback) {
-              const save = (vectorArray) => {
-                vectors.before = vectorArray
-              }
+        vector = newVector
+        db = Burrow.createInstance(memoized)
 
-              return run(callback, this, save)
-            }
-          })
+        if (callback) {
+          const save = (vectorArray) => {
+            vectors.before = vectorArray
+          }
+
+          return run(callback, this, save)
+        }
       },
 
     after: () =>
@@ -176,10 +140,7 @@ const VectorRecord = () => {
           fs.writeFile(
             path.join(dir, 'vector.json'),
             JSON.stringify(vectors, null, 2)
-          ),
-
-          stopBlockchain(chainDir),
-          stopKeys()
+          )
         ])
       },
 
@@ -254,16 +215,16 @@ const VectorServer = () => {
     )
 
   return Object.assign(Vector(), {
-    before: (newDir, newChainDir, options) =>
+    before: (newDir, options) =>
       function () {
         this.timeout(60 * 1000)
-        chainDir = newChainDir
         dir = newDir
         vectors = require(path.join(dir, 'vector.json'))
 
-        return startBlockchain(chainDir,
-          Object.assign({}, options)
-        ).then((urlString) => {
+        const urlString = blockchainUrl(options)
+
+        return Promise.resolve()
+        .then(() => {
           transport = deterministic(jsonRpc.transport(url.parse(urlString)))
 
           if (vectors.before) {
@@ -274,8 +235,7 @@ const VectorServer = () => {
 
     after: () =>
       function () {
-        return stopBlockchain(chainDir)
-          .then(stopKeys())
+        return Promise.resolve()
       },
 
     it: () =>

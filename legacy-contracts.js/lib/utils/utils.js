@@ -84,7 +84,7 @@ var toUtf8 = function (hex) {
  * @returns {String} ascii string representation of hex value
  */
 var hexToAscii = function (hex) {
-    // Find termination
+  // Find termination
   var str = ''
   var i = 0
   var l = hex.length
@@ -156,7 +156,7 @@ var extractDisplayName = function (name) {
  * @returns {String} overloaded part of function/event name
  */
 var extractTypeName = function (name) {
-    /// TODO: make it invulnerable
+  /// TODO: make it invulnerable
   var length = name.indexOf('(')
   return length !== -1 ? name.substr(length + 1, name.length - 1 - (length + 1)).replace(' ', '') : ''
 }
@@ -195,7 +195,7 @@ var fromDecimal = function (value) {
  * @return {String}
  */
 var toHex = function (val) {
-    /* jshint maxcomplexity: 8 */
+  /* jshint maxcomplexity: 8 */
 
   if (isBoolean(val)) {
     return fromDecimal(+val)
@@ -206,19 +206,19 @@ var toHex = function (val) {
   } else if (isObject(val)) {
     return asciiToHex(JSON.stringify(val))
   } else if (isString(val)) {
-        // Zero-length strings are null hex-strings, which we allow.
+    // Zero-length strings are null hex-strings, which we allow.
     if (val.length === 0) {
       return val
     } else if (val[0] === '-') {
-            // Switch on first char being a '-'. If this is the case, it's either
-            // a signed hex- or decimal-string, otherwise ascii.
+      // Switch on first char being a '-'. If this is the case, it's either
+      // a signed hex- or decimal-string, otherwise ascii.
       if (isHex(val.substr(1)) || isDecimal(val.substr(1))) {
         return fromDecimal(val)
       } else {
         return asciiToHex(val)
       }
     } else {
-            // We make sure any '0x' is removed before returning.
+      // We make sure any '0x' is removed before returning.
       if (isHex(val)) {
         if (val.length >= 2 && val.indexOf('0x') === 0) {
           val = val.substr(2)
@@ -231,7 +231,7 @@ var toHex = function (val) {
       }
     }
   } else {
-        // If neither a boolean, number, bignumber or string, throw a type error.
+    // If neither a boolean, number, bignumber or string, throw a type error.
     throw new TypeError('No method for converting object into hex: ' + val.toString())
   }
 }
@@ -244,7 +244,7 @@ var toHex = function (val) {
  * @return {BigNumber} BigNumber
  */
 var toBigNumber = function (number) {
-    /* jshint maxcomplexity:5 */
+  /* jshint maxcomplexity:5 */
   number = number || 0
   if (isBigNumber(number)) { return number }
 

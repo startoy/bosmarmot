@@ -157,11 +157,11 @@ var addFunctionsToContract = function (contract, pipe, outputFormatter) {
   contract.abi.filter(function (json) {
     return json.type === 'function'
   }).map(function (json) {
-        // Add formatter, or if no formatter exists just pass data through.
+    // Add formatter, or if no formatter exists just pass data through.
     var of = outputFormatter || function (json, output) { return output }
 
     const formatter = (result) =>
-          of(json.outputs, result)
+      of(json.outputs, result)
 
     return createFunction(formatter, pipe, json, contract.address)
   }).forEach(function (f) {
@@ -194,8 +194,8 @@ const createEvent = (json, address, pipe) => {
         if (error) {
           eventCallback(error)
         } else {
-            // TODO handle anonymous.
-            // TODO we don't have filtering in tendermint yet, so I do it here.
+          // TODO handle anonymous.
+          // TODO we don't have filtering in tendermint yet, so I do it here.
           if (event.topics[0].toLowerCase() === this.signature()) {
             let decoded
             let error
@@ -225,7 +225,7 @@ const createEvent = (json, address, pipe) => {
     attachToContract (contract) {
       super.attachToContract(contract)
 
-        // Will stop as soon as it receives an event.
+      // Will stop as soon as it receives an event.
       contract[this.displayName()].once = this.execute.bind(this)
     }
   }
@@ -292,7 +292,7 @@ var ContractFactory = function (abi, edbPipe) {
  * @param {Function} callback
  */
 ContractFactory.prototype.new = function () {
-    // parse arguments
+  // parse arguments
   var options = {} // required!
   var callback
 
@@ -312,7 +312,7 @@ ContractFactory.prototype.new = function () {
     options.to = ''
   }
   try {
-        // throw an error if there are no options
+    // throw an error if there are no options
     options.data += encodeConstructorParams(this.abi, args)
 
     var that = this
@@ -361,7 +361,7 @@ ContractFactory.prototype.setOutputFormatter = function (outputFormatter) {
  */
 var Contract = function (abi, address, pipe, outputFormatter) {
   this.address = address
-    // TODO avoid conflict somehow.
+  // TODO avoid conflict somehow.
   this.abi = abi
   addFunctionsToContract(this, pipe, outputFormatter)
   addEventsToContract(this, pipe)
