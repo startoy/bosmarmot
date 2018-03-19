@@ -5,6 +5,7 @@ const DevPipe = require('./pipes/dev_pipe')
 const Promise = require('bluebird')
 const Solidity = require('solc')
 const test = require('@monax/legacy-db/lib/test')
+const path = require('path')
 
 // Convenience function to compile Solidity code in tests.
 const compile = (contractManager, source, name) => {
@@ -30,15 +31,8 @@ const Vector = () => {
 
   return Object.assign(Object.create(vector), {
     before: (dirname, options, callback) =>
-      vector.before(dirname, options, function ({db, validator}) {
-        const accounts = {
-          address: validator.address,
-          pubKey: validator.pub_key,
-          privKey: validator.priv_key
-        }
-
-        manager = contractsModule.newContractManager(new DevPipe(db, accounts))
-
+      vector.before(dirname, path.join(__dirname, '../../test/chain'), options, function ({db, account}) {
+        manager = contractsModule.newContractManager(new DevPipe(db, account))
         if (callback) {
           return callback.call(this, manager)
         }
