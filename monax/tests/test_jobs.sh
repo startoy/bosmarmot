@@ -120,10 +120,7 @@ run_test(){
     --set "addr1=$key1_addr" --set "addr2=$key2_addr" --set "addr2_pub=$key2_pub" #--debug
   test_exit=$?
 
-  rm -rf ./abi &>/dev/null
-  rm -rf ./bin &>/dev/null
-  rm ./epm.output.json &>/dev/null
-  rm ./jobs_output.csv &>/dev/null
+  git clean -fdx ./abi ./bin ./epm.output.json ./jobs_output.csv
 
   # Reset for next run
   goto_base
