@@ -35,6 +35,14 @@ fix:
 # Run testsGOFILES_NOVENDOR
 .PHONY:	test
 test: check bin/solc
+	@rm bin/solc || true
+	@ln -s solc-stable bin/solc
+	@scripts/bin_wrapper.sh go test ${GOPACKAGES_NOVENDOR}
+
+.PHONY:	test
+test_solc_latest: check bin/solc
+	@rm bin/solc || true
+	@ln -s solc-latest bin/solc
 	@scripts/bin_wrapper.sh go test ${GOPACKAGES_NOVENDOR}
 
 # Run tests for development (noisy)
@@ -45,6 +53,12 @@ test_dev:
 # Run tests including integration tests
 .PHONY:	test_integration
 test_integration: build_bin bin/solc bin/burrow
+	@scripts/bin_wrapper.sh monax/tests/test_jobs.sh
+
+# Run tests including integration tests
+.PHONY:	test_integration_solc_latest
+test_integration_solc_latest: export SOLC = latest
+test_integration_solc_latest: build_bin bin/solc bin/burrow
 	@scripts/bin_wrapper.sh monax/tests/test_jobs.sh
 
 # Use a provided/local Burrow
@@ -79,10 +93,12 @@ build_bin:
 	@go build -o bin/bos ./monax/cmd/bos
 	@go build -o bin/monax-keys ./keys/cmd/monax-keys
 
-bin/solc: ./scripts/deps/solc.sh
+bin/solc: ./scripts/deps/solc-stable.sh ./scripts/deps/solc-latest.sh
 	@mkdir -p bin
-	@scripts/deps/solc.sh bin/solc
-	@touch bin/solc
+	@scripts/deps/solc-stable.sh bin/solc-stable
+	@touch bin/solc-stable
+	@scripts/deps/solc-latest.sh bin/solc-latest
+	@touch bin/solc-latest
 
 scripts/deps/burrow.sh: Gopkg.lock
 	@go get -u github.com/golang/dep/cmd/dep
