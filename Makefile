@@ -11,6 +11,8 @@ SHELL := /bin/bash
 REPO := $(shell pwd)
 GO_FILES := $(shell go list -f "{{.Dir}}" ./...)
 GOPACKAGES_NOVENDOR := $(shell go list ./...)
+COMMIT := $(shell git rev-parse --short HEAD)
+BURROW_PACKAGE := github.com/hyperledger/burrow
 
 ### Integration test binaries
 # We make the relevant targets for building/fetching these depend on the Makefile itself - if unnecessary rebuilds
@@ -32,7 +34,7 @@ check:
 fix:
 	@goimports -l -w ${GO_FILES}
 
-# Run testsGOFILES_NOVENDOR
+# Run tests
 .PHONY:	test
 test: check bin/solc
 	@rm bin/solc || true
@@ -90,8 +92,8 @@ ensure_vendor: reinstall_vendor
 
 .PHONY: build_bin
 build_bin:
-	@go build -o bin/bos ./monax/cmd/bos
-	@go build -o bin/monax-keys ./keys/cmd/monax-keys
+	@go build -ldflags "-X github.com/monax/bosmarmot/project.commit=${COMMIT}" -o bin/bos ./monax/cmd/bos
+	@go build -ldflags "-X github.com/monax/bosmarmot/project.commit=${COMMIT}" -o bin/monax-keys ./keys/cmd/monax-keys
 
 bin/solc: ./scripts/deps/solc-stable.sh ./scripts/deps/solc-latest.sh
 	@mkdir -p bin
@@ -105,14 +107,22 @@ scripts/deps/burrow.sh: Gopkg.lock
 	@scripts/deps/burrow-gen.sh > scripts/deps/burrow.sh
 	@chmod +x scripts/deps/burrow.sh
 
+.PHONY: burrow_local
+burrow_local:
+	@rm -rf .gopath_burrow
+	@mkdir -p .gopath_burrow/src/${BURROW_PACKAGE}
+	@cp -r ${GOPATH}/src/${BURROW_PACKAGE}/. .gopath_burrow/src/${BURROW_PACKAGE}
+
 bin/burrow: ./scripts/deps/burrow.sh
+	mkdir -p bin
 	@GOPATH="${REPO}/.gopath_burrow" \
-	scripts/go_build_revision.sh \
+	scripts/go_get_revision.sh \
 	https://github.com/hyperledger/burrow.git \
-	github.com/hyperledger/burrow \
+	${BURROW_PACKAGE} \
 	$(shell ./scripts/deps/burrow.sh) \
-	cmd/burrow \
-	bin/burrow
+	"make build_db" && \
+	cp .gopath_burrow/src/${BURROW_PACKAGE}/bin/burrow ./bin/burrow
+
 
 # Build all the things
 .PHONY: build

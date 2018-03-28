@@ -88,7 +88,7 @@ func BuildKeysCommand() {
 		Use:   "version",
 		Short: "Print Version",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println(project.History.CurrentVersion().String())
+			fmt.Println(project.FullVersion())
 		},
 	})
 	addKeysFlags()
