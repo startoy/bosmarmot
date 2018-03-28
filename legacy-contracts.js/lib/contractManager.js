@@ -191,6 +191,13 @@ const createEvent = (json, address, pipe) => {
 
       return pipe.eventSub(this._address, startCallback, (error, event) => {
         event = event.EventDataLog
+        event = {
+          topics: event.Topics,
+          address: event.Address,
+          data: event.Data,
+          height: event.Height
+        }
+
         if (error) {
           eventCallback(error)
         } else {

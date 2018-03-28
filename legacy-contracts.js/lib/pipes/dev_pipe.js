@@ -94,9 +94,9 @@ DevPipe.prototype.transact = function (txPayload, callback) {
       callback(error)
     } else {
       if (to) {
-        callback(null, data.return)
+        callback(null, data.Return.toUpperCase())
       } else {
-        callback(null, data.call_data.callee)
+        callback(null, data.CallData.Callee)
       }
     }
   })
