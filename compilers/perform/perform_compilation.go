@@ -72,7 +72,13 @@ func linkBinaries(req *definitions.BinaryRequest) *BinaryResponse {
 	buf := bytes.NewBufferString(req.BinaryFile)
 	var output bytes.Buffer
 	var stderr bytes.Buffer
-	linkCmd := exec.Command("solc", "--link", "--libraries", req.Libraries)
+	args := []string{"--link"}
+	for _, l := range strings.Split(req.Libraries, " ") {
+		if len(l) > 0 {
+			args = append(args, "--libraries", l)
+		}
+	}
+	linkCmd := exec.Command("solc", args...)
 	linkCmd.Stdin = buf
 	linkCmd.Stderr = &stderr
 	linkCmd.Stdout = &output

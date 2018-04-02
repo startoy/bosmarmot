@@ -1,6 +1,10 @@
 package definitions
 
-import "github.com/monax/bosmarmot/monax/config"
+import (
+	"strings"
+
+	"github.com/monax/bosmarmot/monax/config"
+)
 
 // Compile request object
 type Request struct {
@@ -43,8 +47,12 @@ func (l LangConfig) Cmd(includes []string, libraries string, optimize bool) (arg
 				args = append(args, "--optimize")
 			}
 			if libraries != "" {
-				args = append(args, "--libraries")
-				args = append(args, libraries)
+				for _, l := range strings.Split(libraries, " ") {
+					if len(l) > 0 {
+						args = append(args, "--libraries")
+						args = append(args, libraries)
+					}
+				}
 			}
 			args = append(args, includes...)
 		} else {
