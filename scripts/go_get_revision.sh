@@ -4,8 +4,7 @@
 REPO=$1
 PROJECT=$2
 REVISION=$3
-PACKAGE=$4
-OUTPUT=$5
+DO=$4
 
 PROJECT_PATH="${GOPATH}/src/${PROJECT}"
 
@@ -15,6 +14,4 @@ pushd "$PROJECT_PATH"
 # Attempt to checkout the specified revision
 git fetch --all
 git checkout ${REVISION}
-popd
-# Build
-go build -o ${OUTPUT} ${PROJECT}/${PACKAGE}
+${DO}
