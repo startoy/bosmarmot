@@ -15,11 +15,28 @@ jobs:
       - checkout
       - run: make test
 
+  test_solc_latest:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          # note the compiler tests need to be reworked/removed with solc >0.4.20
+          command: |
+            make test_solc_latest || true
+
   test_integration:
     <<: *defaults
     steps:
       - checkout
       - run: make test_integration
+
+  test_integration_solc_latest:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          command: |
+            make test_integration_solc_latest
 
   ensure_vendor:
     <<: *defaults
@@ -34,5 +51,7 @@ workflows:
     jobs:
       - test
       - test_integration
+      - test_solc_latest
+      - test_integration_solc_latest
       - ensure_vendor
 
