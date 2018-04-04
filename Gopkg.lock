@@ -175,6 +175,7 @@
   name = "github.com/hyperledger/burrow"
   packages = [
     "account",
+    "account/state",
     "binary",
     "blockchain",
     "client",
@@ -198,18 +199,18 @@
     "logging/errors",
     "logging/loggers",
     "logging/structure",
-    "logging/types",
     "permission",
+    "permission/snatives",
     "permission/types",
+    "process",
     "project",
     "rpc",
     "rpc/tm",
     "rpc/tm/client",
     "rpc/v0/server",
-    "server",
     "txs"
   ]
-  revision = "6fab282e256b5eb18fb18aabce30a0e10870ca92"
+  revision = "989b62b2242293d0118a54df64a5c047214f21e7"
 
 [[projects]]
   name = "github.com/inconshreveable/mousetrap"
@@ -392,12 +393,6 @@
   packages = ["."]
   revision = "594cc0c062a7174475f0ab654384038d77067917"
   version = "v0.2.0"
-
-[[projects]]
-  name = "github.com/tendermint/merkleeyes"
-  packages = ["iavl"]
-  revision = "102aaf5a8ffda1846413fb22805a94def2045b9f"
-  version = "v0.2.4"
 
 [[projects]]
   name = "github.com/tendermint/tendermint"
@@ -613,6 +608,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3af2e3535f4a63013c0e692bf9dd30de2da2cc748e97869eb32ec5b17ef194ee"
+  inputs-digest = "9e57d73629ec5a9fe1ce8683a752ca33b9dc7bc63198256eff1289d1aab6ffbf"
   solver-name = "gps-cdcl"
   solver-version = 1

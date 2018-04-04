@@ -9,11 +9,11 @@ import (
 
 	acm "github.com/hyperledger/burrow/account"
 	"github.com/hyperledger/burrow/client"
-	"github.com/hyperledger/burrow/logging/loggers"
+	"github.com/hyperledger/burrow/logging"
 )
 
 func GetBlockHeight(do *definitions.Do) (latestBlockHeight uint64, err error) {
-	nodeClient := client.NewBurrowNodeClient(do.ChainURL, loggers.NewNoopInfoTraceLogger())
+	nodeClient := client.NewBurrowNodeClient(do.ChainURL, logging.NewNoopLogger())
 	// NOTE: NodeInfo is no longer exposed through Status();
 	// other values are currently not use by the package manager
 	_, _, _, latestBlockHeight, _, err = nodeClient.Status()
@@ -30,7 +30,7 @@ func AccountsInfo(account, field string, do *definitions.Do) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("Account Addr %s is improper hex: %v", account, err)
 	}
-	nodeClient := client.NewBurrowNodeClient(do.ChainURL, loggers.NewNoopInfoTraceLogger())
+	nodeClient := client.NewBurrowNodeClient(do.ChainURL, logging.NewNoopLogger())
 
 	r, err := nodeClient.GetAccount(address)
 	if err != nil {
@@ -68,7 +68,7 @@ func AccountsInfo(account, field string, do *definitions.Do) (string, error) {
 }
 
 func NamesInfo(name, field string, do *definitions.Do) (string, error) {
-	nodeClient := client.NewBurrowNodeClient(do.ChainURL, loggers.NewNoopInfoTraceLogger())
+	nodeClient := client.NewBurrowNodeClient(do.ChainURL, logging.NewNoopLogger())
 	owner, data, expirationBlock, err := nodeClient.GetName(name)
 	if err != nil {
 		return "", err
@@ -89,7 +89,7 @@ func NamesInfo(name, field string, do *definitions.Do) (string, error) {
 }
 
 func ValidatorsInfo(field string, do *definitions.Do) (string, error) {
-	nodeClient := client.NewBurrowNodeClient(do.ChainURL, loggers.NewNoopInfoTraceLogger())
+	nodeClient := client.NewBurrowNodeClient(do.ChainURL, logging.NewNoopLogger())
 	_, bondedValidators, unbondingValidators, err := nodeClient.ListValidators()
 	if err != nil {
 		return "", err

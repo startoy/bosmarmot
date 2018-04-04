@@ -7,7 +7,7 @@ import (
 
 	acm "github.com/hyperledger/burrow/account"
 	"github.com/hyperledger/burrow/client"
-	"github.com/hyperledger/burrow/logging/loggers"
+	"github.com/hyperledger/burrow/logging"
 	"github.com/monax/bosmarmot/monax/definitions"
 	"github.com/monax/bosmarmot/monax/log"
 	"github.com/monax/bosmarmot/monax/pkgs/abi"
@@ -60,7 +60,7 @@ func QueryContractJob(query *definitions.QueryContract, do *definitions.Do) (str
 	}
 
 	// Call the client
-	nodeClient := client.NewBurrowNodeClient(do.ChainURL, loggers.NewNoopInfoTraceLogger())
+	nodeClient := client.NewBurrowNodeClient(do.ChainURL, logging.NewNoopLogger())
 	result, _, err := nodeClient.QueryContract(fromAddress, toAddress, dataBytes)
 	if err != nil {
 		return "", nil, err
