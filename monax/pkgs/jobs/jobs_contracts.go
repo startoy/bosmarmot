@@ -11,7 +11,7 @@ import (
 	"github.com/hyperledger/burrow/client"
 	"github.com/hyperledger/burrow/client/rpc"
 	"github.com/hyperledger/burrow/keys"
-	"github.com/hyperledger/burrow/logging/loggers"
+	"github.com/hyperledger/burrow/logging"
 	"github.com/hyperledger/burrow/txs"
 	compilers "github.com/monax/bosmarmot/compilers/perform"
 	"github.com/monax/bosmarmot/monax/definitions"
@@ -253,8 +253,8 @@ func deployRaw(do *definitions.Do, deploy *definitions.Deploy, contractName, con
 		"chain-url": do.ChainURL,
 	}).Info()
 
-	monaxNodeClient := client.NewBurrowNodeClient(do.ChainURL, loggers.NewNoopInfoTraceLogger())
-	monaxKeyClient := keys.NewKeyClient(do.Signer, loggers.NewNoopInfoTraceLogger())
+	monaxNodeClient := client.NewBurrowNodeClient(do.ChainURL, logging.NewNoopLogger())
+	monaxKeyClient := keys.NewKeyClient(do.Signer, logging.NewNoopLogger())
 	tx, err := rpc.Call(monaxNodeClient, monaxKeyClient, do.PublicKey, deploy.Source, "", deploy.Amount,
 		deploy.Nonce, deploy.Gas, deploy.Fee, contractCode)
 	if err != nil {
@@ -320,8 +320,8 @@ func CallJob(call *definitions.Call, do *definitions.Do) (string, []*definitions
 		"data":        callData,
 	}).Info("Calling")
 
-	nodeClient := client.NewBurrowNodeClient(do.ChainURL, loggers.NewNoopInfoTraceLogger())
-	keyClient := keys.NewKeyClient(do.Signer, loggers.NewNoopInfoTraceLogger())
+	nodeClient := client.NewBurrowNodeClient(do.ChainURL, logging.NewNoopLogger())
+	keyClient := keys.NewKeyClient(do.Signer, logging.NewNoopLogger())
 	tx, err := rpc.Call(nodeClient, keyClient, do.PublicKey, call.Source, call.Destination, call.Amount, call.Nonce, call.Gas, call.Fee, callData)
 	if err != nil {
 		return "", nil, err
@@ -379,12 +379,12 @@ func CallJob(call *definitions.Call, do *definitions.Do) (string, []*definitions
 }
 
 func deployFinalize(do *definitions.Do, tx interface{}) (string, error) {
-	nodeClient := client.NewBurrowNodeClient(do.ChainURL, loggers.NewNoopInfoTraceLogger())
+	nodeClient := client.NewBurrowNodeClient(do.ChainURL, logging.NewNoopLogger())
 	_, chainID, _, err := nodeClient.ChainId()
 	if err != nil {
 		return "", err
 	}
-	keyClient := keys.NewKeyClient(do.Signer, loggers.NewNoopInfoTraceLogger())
+	keyClient := keys.NewKeyClient(do.Signer, logging.NewNoopLogger())
 	res, err := rpc.SignAndBroadcast(chainID, nodeClient, keyClient, tx.(txs.Tx), true, true, true)
 	if err != nil {
 		return util.MintChainErrorHandler(do, err)

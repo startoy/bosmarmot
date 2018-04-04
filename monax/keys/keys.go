@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/hyperledger/burrow/keys"
-	"github.com/hyperledger/burrow/logging/loggers"
+	"github.com/hyperledger/burrow/logging"
 	mkeys "github.com/monax/bosmarmot/keys/monax-keys"
 	"github.com/monax/bosmarmot/monax/log"
 )
@@ -27,7 +27,7 @@ func DefaultKeysURL() string {
 
 func NewKeyClient(keysUrl string) *LocalKeyClient {
 	return &LocalKeyClient{
-		keys.NewKeyClient(keysUrl, loggers.NewNoopInfoTraceLogger()),
+		keys.NewKeyClient(keysUrl, logging.NewNoopLogger()),
 	}
 }
 
