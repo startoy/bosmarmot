@@ -104,6 +104,7 @@ perform_tests(){
 }
 
 test_teardown(){
+  cd "$script_dir"
   echo "Cleaning up..."
   if [[ "$boot" = true ]]; then
     kill ${burrow_pid}
