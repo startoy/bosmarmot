@@ -63,7 +63,7 @@
     "doc": "jsdoc --configure JSDoc/conf.json --destination doc index.js lib README.md",
     "precommit": "standard",
     "pretest": "standard",
-    "test": "mocha --recursive --reporter mocha-circleci-reporter"
+    "test": "../test/run_js_tests.sh"
   },
   "standard": {
     "globals": [

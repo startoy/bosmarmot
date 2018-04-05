@@ -42,8 +42,8 @@ rpc_tm_port=48003
 burrow_root="${script_dir}/.burrow"
 
 # Temporary logs
-keys_log=keys.log
-burrow_log=burrow.log
+keys_log="${script_dir}/keys.log"
+burrow_log="${script_dir}/burrow.log"
 #
 # ----------------------------------------------------------
 
@@ -62,16 +62,19 @@ test_setup(){
   echo "  $(type ${keys_bin}) (version: $(${keys_bin} version))"
   echo "  $(type ${burrow_bin}) (version: $(${burrow_bin} --version))"
   echo
+
+  cd "$script_dir"
   # start test chain
   if [[ "$boot" = true ]]; then
     echo "Booting keys then Burrow.."
     echo "Starting keys on port $keys_port"
-    ${keys_bin} server --port ${keys_port} --dir keys 2> "$keys_log" &
+    ${keys_bin} server --port ${keys_port} --dir "${script_dir}/keys" 2> "$keys_log" &
     keys_pid=$!
 
     sleep 1
     echo "Starting Burrow with tendermint port: $tendermint_port, tm RPC port: $rpc_tm_port"
     rm -rf ${burrow_root}
+
     ${burrow_bin} -c "${chain_dir}/burrow.toml" -g "${chain_dir}/genesis.json" 2> "$burrow_log" &
     burrow_pid=$!
 
