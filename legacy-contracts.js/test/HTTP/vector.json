@@ -23,17 +23,17 @@
           "done": false,
           "value": {
             "result": {
-              "call_data": {
-                "caller": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
-                "callee": "6C85F5D98DE94C0FFB5C82553B100D18566A58A5",
-                "data": "6060604052603B8060106000396000F3606060405260E060020A600035046360FE47B1811460245780636D4CE63C14602E575B005B6004356000556022565B6000546060908152602090F3",
-                "value": 0,
-                "gas": 999985
+              "CallData": {
+                "Caller": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
+                "Callee": "6C85F5D98DE94C0FFB5C82553B100D18566A58A5",
+                "Data": "6060604052603B8060106000396000F3606060405260E060020A600035046360FE47B1811460245780636D4CE63C14602E575B005B6004356000556022565B6000546060908152602090F3",
+                "Value": 0,
+                "Gas": 999985
               },
-              "origin": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
-              "tx_id": "56138F976D6D0DD14EBF38771F2001F9280B2624",
-              "return": "606060405260E060020A600035046360FE47B1811460245780636D4CE63C14602E575B005B6004356000556022565B6000546060908152602090F3",
-              "exception": ""
+              "Origin": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
+              "TxID": "56138F976D6D0DD14EBF38771F2001F9280B2624",
+              "Return": "606060405260E060020A600035046360FE47B1811460245780636D4CE63C14602E575B005B6004356000556022565B6000546060908152602090F3",
+              "Exception": ""
             },
             "id": "O4Aj8Tns5Sdme7goAUjttgkjjih2KdbTveuMV5/44x4=",
             "jsonrpc": "2.0"
@@ -62,17 +62,17 @@
           "done": false,
           "value": {
             "result": {
-              "call_data": {
-                "caller": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
-                "callee": "6C85F5D98DE94C0FFB5C82553B100D18566A58A5",
-                "data": "60FE47B1000000000000000000000000000000000000000000000000000000000000002A",
-                "value": 0,
-                "gas": 999967
+              "CallData": {
+                "Caller": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
+                "Callee": "6C85F5D98DE94C0FFB5C82553B100D18566A58A5",
+                "Data": "60FE47B1000000000000000000000000000000000000000000000000000000000000002A",
+                "Value": 0,
+                "Gas": 999967
               },
-              "origin": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
-              "tx_id": "06601173408AF45520BF4720D3FF4DBA5894CEB6",
-              "return": "",
-              "exception": ""
+              "Origin": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
+              "TxID": "06601173408AF45520BF4720D3FF4DBA5894CEB6",
+              "Return": "",
+              "Exception": ""
             },
             "id": "NL3djViQVFD5bkeQ/k2BzW8flBJ6oMitveGwBEgI9Bo=",
             "jsonrpc": "2.0"
