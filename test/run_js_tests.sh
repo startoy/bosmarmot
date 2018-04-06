@@ -95,10 +95,9 @@ test_setup(){
 
 perform_tests(){
   echo ""
-
   cd "$js_dir"
 
-  account=$test_account mocha --recursive --reporter mocha-circleci-reporter
+  account=$test_account mocha --recursive --reporter mocha-circleci-reporter ${1}
 
   test_exit=$?
 }
@@ -143,5 +142,5 @@ if [[ "$TEST" == "record" ]] || [[ "$TEST" == "server" ]]; then
 fi
 
 echo "Running js Tests..."
-perform_tests
+perform_tests "$1"
 
