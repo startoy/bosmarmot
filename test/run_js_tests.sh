@@ -135,12 +135,12 @@ echo "Hello! I'm the marmot that tests the $bos_bin jobs tooling."
 echo
 echo "testing with target $bos_bin"
 echo
-test_setup
 
-# ---------------------------------------------------------------------------
-# Go!
 
-trap test_teardown EXIT
+if [[ "$TEST" == "record" ]] || [[ "$TEST" == "server" ]]; then
+    test_setup
+    trap test_teardown EXIT
+fi
 
 echo "Running js Tests..."
 perform_tests
