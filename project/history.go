@@ -28,6 +28,8 @@ func FullVersion() string {
 // To cut a new release add a release to the front of this slice then run the
 // release tagging script: ./scripts/tag_release.sh
 var History relic.ImmutableHistory = relic.NewHistory("Bosmarmot").MustDeclareReleases(
+	//"0.1.0",
+	//`Major release of Bosmarmot tooling`,
 	"0.0.1",
 	`Initial Bosmarmot combining and refactoring Monax tooling, including:
 - The monax tool (just 'monax pkgs do')

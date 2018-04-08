@@ -51,6 +51,13 @@ test: test_bos test_js
 test_dev:
 	@go test -v ${GOPACKAGES_NOVENDOR}
 
+# Install dependency and make legacy-contracts depend on legacy-db by relative path
+.PHONY: npm_install
+npm_install:
+	@cd legacy-db.js && npm install
+	@cd legacy-contracts.js && npm install --save ../legacy-db.js
+	@cd legacy-contracts.js && npm install
+
 # Run tests including integration tests
 .PHONY:	test_integration
 test_integration: build_bin bin/solc bin/burrow
@@ -73,7 +80,6 @@ erase_vendor:
 # install vendor uses dep to install vendored dependencies
 .PHONY: reinstall_vendor
 reinstall_vendor: erase_vendor
-	@go get -u github.com/golang/dep/cmd/dep
 	@dep ensure -v
 
 # delete the vendor directy and pull back using dep lock and constraints file

@@ -32,6 +32,7 @@ js_dir="${script_dir}/../legacy-contracts.js"
 if [[ "$debug" = true ]]; then
     set -o xtrace
 fi
+set -e
 
 # ----------------------------------------------------------
 # Constants

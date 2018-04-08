@@ -6,6 +6,10 @@ defaults: &defaults
   docker:
     - image: quay.io/monax/bosmarmot:ci
 
+tag_filters: &tags_filters
+  tags:
+    only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
+
 # Start of CircleCI 2.0 config
 version: 2
 jobs:
@@ -13,12 +17,14 @@ jobs:
     <<: *defaults
     steps:
       - checkout
+      - run: make npm_install
       - run: make test
 
   test_integration:
     <<: *defaults
     steps:
       - checkout
+      - run: make npm_install
       - run: make test_integration
 
   ensure_vendor:
@@ -26,21 +32,39 @@ jobs:
     steps:
       - checkout
       - run: make ensure_vendor
-  
-  #publish_npm:
-    #docker:
-    #  - image: circleci/<language>:<version TAG>
-    #steps:
-    #  - checkout
-    #  - run: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" >> ~/.npmrc
-    #  - run: npm publish
+
+  publish_npm:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" >> ~/.npmrc
+      - run: cd legacy-db.js && npm publish
+      - run: cd legacy-contracts.js && npm publish
+
 
 workflows:
-
   version: 2
+
   test_and_release:
     jobs:
-      - test
-      - test_integration
-      - ensure_vendor
+      - test:
+          filters:
+            <<: *tags_filters
 
+      - test_integration:
+          filters:
+            <<: *tags_filters
+
+      - ensure_vendor:
+          filters:
+            <<: *tags_filters
+
+      - publish_npm:
+          requires:
+            - test
+            - test_integration
+            - ensure_vendor
+          filters:
+            <<: *tags_filters
+            branches:
+              ignore: /.*/
