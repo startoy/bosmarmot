@@ -4,7 +4,7 @@
 defaults: &defaults
   working_directory: /go/src/github.com/monax/bosmarmot
   docker:
-    - image: circleci/golang:1.9.3
+    - image: quay.io/monax/bosmarmot:ci
 
 # Start of CircleCI 2.0 config
 version: 2
