@@ -34,39 +34,41 @@ check:
 fix:
 	@goimports -l -w ${GO_FILES}
 
+.PHONY: test_js
+test_js:
+	@test/run_js_tests.sh
+
 # Run tests
-.PHONY:	test
-test: check bin/solc
-	@rm bin/solc || true
-	@ln -s solc-stable bin/solc
+.PHONY:	test_bos
+test_bos: check bin/solc
 	@scripts/bin_wrapper.sh go test ${GOPACKAGES_NOVENDOR}
 
 .PHONY:	test
-test_solc_latest: check bin/solc
-	@rm bin/solc || true
-	@ln -s solc-latest bin/solc
-	@scripts/bin_wrapper.sh go test ${GOPACKAGES_NOVENDOR}
+test: test_bos test_js
 
 # Run tests for development (noisy)
 .PHONY:	test_dev
 test_dev:
 	@go test -v ${GOPACKAGES_NOVENDOR}
 
+# Install dependency and make legacy-contracts depend on legacy-db by relative path
+.PHONY: npm_install
+npm_install:
+	@cd legacy-db.js && npm install
+	@cd legacy-contracts.js && npm install --save ../legacy-db.js
+	@cd legacy-contracts.js && npm install
+
 # Run tests including integration tests
 .PHONY:	test_integration
 test_integration: build_bin bin/solc bin/burrow
-	@scripts/bin_wrapper.sh monax/tests/test_jobs.sh
-
-# Run tests including integration tests
-.PHONY:	test_integration_solc_latest
-test_integration_solc_latest: export SOLC = latest
-test_integration_solc_latest: build_bin bin/solc bin/burrow
+	@TEST=record scripts/bin_wrapper.sh test/run_js_tests.sh
 	@scripts/bin_wrapper.sh monax/tests/test_jobs.sh
 
 # Use a provided/local Burrow
 .PHONY:	test_integration_no_burrow
 test_integration_no_burrow: build_bin bin/solc
 	@scripts/bin_wrapper.sh monax/tests/test_jobs.sh
+	@TEST=record test/run_js_tests.sh
 
 ### Vendoring
 
@@ -78,7 +80,6 @@ erase_vendor:
 # install vendor uses dep to install vendored dependencies
 .PHONY: reinstall_vendor
 reinstall_vendor: erase_vendor
-	@go get -u github.com/golang/dep/cmd/dep
 	@dep ensure -v
 
 # delete the vendor directy and pull back using dep lock and constraints file
@@ -95,12 +96,11 @@ build_bin:
 	@go build -ldflags "-X github.com/monax/bosmarmot/project.commit=${COMMIT}" -o bin/bos ./monax/cmd/bos
 	@go build -ldflags "-X github.com/monax/bosmarmot/project.commit=${COMMIT}" -o bin/monax-keys ./keys/cmd/monax-keys
 
-bin/solc: ./scripts/deps/solc-stable.sh ./scripts/deps/solc-latest.sh
+
+bin/solc: ./scripts/deps/solc.sh
 	@mkdir -p bin
-	@scripts/deps/solc-stable.sh bin/solc-stable
-	@touch bin/solc-stable
-	@scripts/deps/solc-latest.sh bin/solc-latest
-	@touch bin/solc-latest
+	@scripts/deps/solc.sh bin/solc
+	@touch bin/solc
 
 scripts/deps/burrow.sh: Gopkg.lock
 	@go get -u github.com/golang/dep/cmd/dep

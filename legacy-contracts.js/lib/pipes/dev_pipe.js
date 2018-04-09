@@ -33,12 +33,12 @@ module.exports = DevPipe
 function DevPipe (burrow, accounts) {
   Pipe.call(this, burrow)
   var ad
-    // For read-only acccess.
+  // For read-only acccess.
   if (!accounts) {
     ad = _createAccountData()
   } else if (typeof (accounts) === 'string') {
     console.log('DEPRECATED: Do not pass a private key (string) to DevPipe; use the accountData or accountData[] forms.')
-        // Interpreted as a private key.
+    // Interpreted as a private key.
     ad = _createAccountData([{
       address: ZERO_ADDRESS,
       pubKey: '',
@@ -94,9 +94,9 @@ DevPipe.prototype.transact = function (txPayload, callback) {
       callback(error)
     } else {
       if (to) {
-        callback(null, data.return)
+        callback(null, data.Return.toUpperCase())
       } else {
-        callback(null, data.call_data.callee)
+        callback(null, data.CallData.Callee)
       }
     }
   })
@@ -169,11 +169,11 @@ function _createAccountData (accounts) {
 }
 
 function _checkAccountData (accountData) {
-    // TODO more checks if this system becomes permanent.
+  // TODO more checks if this system becomes permanent.
   if (!accountData.privKey || !accountData.address) {
     return false
   }
-    // Allow for the tendermint struct with typed fields (field = [typeNum, hexString]), but drop the type number.
+  // Allow for the tendermint struct with typed fields (field = [typeNum, hexString]), but drop the type number.
   if (_isTyped(accountData.address)) {
     accountData.address = accountData.address[1]
   }

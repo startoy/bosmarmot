@@ -19,13 +19,8 @@
 bos_bin=${bos_bin:-bos}
 burrow_bin=${burrow_bin:-burrow}
 keys_bin=${keys_bin:-monax-keys}
+
 # currently we must use 'solc' as hardcoded by compilers
-solc_dir=`dirname $(which solc-latest)`
-if [[ "$SOLC" == "latest" ]]; then
-  ln -s $solc_dir/solc-latest $solc_dir/solc
-else
-  ln -s $solc_dir/solc-stable $solc_dir/solc
-fi
 solc_bin=solc
 
 # If false we will not try to start keys or Burrow and expect them to be running
@@ -176,7 +171,6 @@ perform_tests_that_should_fail(){
 
 test_teardown(){
   echo "Cleaning up..."
-  rm $solc_dir/solc
   if [[ "$boot" = true ]]; then
     kill ${burrow_pid}
     echo "Waiting for burrow to shutdown..."
