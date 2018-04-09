@@ -37,9 +37,7 @@ import (
 const GasLimit = uint64(1000000)
 
 type BatchExecutor interface {
-	state.Iterable
-	state.AccountUpdater
-	state.StorageSetter
+	state.Reader
 	// Execute transaction against block cache (i.e. block buffer)
 	Execute(tx txs.Tx) error
 	// Reset executor to underlying State
@@ -55,7 +53,7 @@ type BatchCommitter interface {
 }
 
 type executor struct {
-	sync.Mutex
+	sync.RWMutex
 	chainID      string
 	tip          bcm.Tip
 	runCall      bool
@@ -71,42 +69,32 @@ type executor struct {
 var _ BatchExecutor = (*executor)(nil)
 
 // Wraps a cache of what is variously known as the 'check cache' and 'mempool'
-func NewBatchChecker(state *State,
-	chainID string,
-	tip bcm.Tip,
-	logger *logging.Logger,
+func NewBatchChecker(backend *State, chainID string, tip bcm.Tip, logger *logging.Logger,
 	options ...ExecutionOption) BatchExecutor {
-	return newExecutor(false, state, chainID, tip, event.NewNoOpPublisher(),
+
+	return newExecutor("CheckCache", false, backend, chainID, tip, event.NewNoOpPublisher(),
 		logger.WithScope("NewBatchExecutor"), options...)
 }
 
-func NewBatchCommitter(state *State,
-	chainID string,
-	tip bcm.Tip,
-	publisher event.Publisher,
-	logger *logging.Logger,
+func NewBatchCommitter(backend *State, chainID string, tip bcm.Tip, publisher event.Publisher, logger *logging.Logger,
 	options ...ExecutionOption) BatchCommitter {
 
-	return newExecutor(true, state, chainID, tip, publisher,
+	return newExecutor("CommitCache", true, backend, chainID, tip, publisher,
 		logger.WithScope("NewBatchCommitter"), options...)
 }
 
-func newExecutor(runCall bool,
-	backend *State,
-	chainID string,
-	tip bcm.Tip,
-	eventFireable event.Publisher,
-	logger *logging.Logger,
-	options ...ExecutionOption) *executor {
+func newExecutor(name string, runCall bool, backend *State, chainID string, tip bcm.Tip, publisher event.Publisher,
+	logger *logging.Logger, options ...ExecutionOption) *executor {
+
 	exe := &executor{
 		chainID:      chainID,
 		tip:          tip,
 		runCall:      runCall,
 		state:        backend,
-		stateCache:   state.NewCache(backend),
+		stateCache:   state.NewCache(backend, state.Name(name)),
 		nameRegCache: NewNameRegCache(backend),
-		publisher:    eventFireable,
-		eventCache:   event.NewEventCache(eventFireable),
+		publisher:    publisher,
+		eventCache:   event.NewEventCache(publisher),
 		logger:       logger.With(structure.ComponentKey, "Executor"),
 	}
 	for _, option := range options {
@@ -117,32 +105,16 @@ func newExecutor(runCall bool,
 
 // Accounts
 func (exe *executor) GetAccount(address acm.Address) (acm.Account, error) {
+	exe.RLock()
+	defer exe.RUnlock()
 	return exe.stateCache.GetAccount(address)
-}
-
-func (exe *executor) UpdateAccount(account acm.Account) error {
-	return exe.stateCache.UpdateAccount(account)
-}
-
-func (exe *executor) RemoveAccount(address acm.Address) error {
-	return exe.stateCache.RemoveAccount(address)
-}
-
-func (exe *executor) IterateAccounts(consumer func(acm.Account) bool) (bool, error) {
-	return exe.stateCache.IterateAccounts(consumer)
 }
 
 // Storage
 func (exe *executor) GetStorage(address acm.Address, key binary.Word256) (binary.Word256, error) {
+	exe.RLock()
+	defer exe.RUnlock()
 	return exe.stateCache.GetStorage(address, key)
-}
-
-func (exe *executor) SetStorage(address acm.Address, key binary.Word256, value binary.Word256) error {
-	return exe.stateCache.SetStorage(address, key, value)
-}
-
-func (exe *executor) IterateStorage(address acm.Address, consumer func(key, value binary.Word256) bool) (bool, error) {
-	return exe.stateCache.IterateStorage(address, consumer)
 }
 
 func (exe *executor) Commit() (hash []byte, err error) {
@@ -150,7 +122,7 @@ func (exe *executor) Commit() (hash []byte, err error) {
 	defer exe.Unlock()
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("recovered from panic in executor.Commit(): %v", r)
+			err = fmt.Errorf("recovered from panic in executor.Commit(): %v\n%v", r, debug.Stack())
 		}
 	}()
 	// flush the caches
@@ -173,6 +145,8 @@ func (exe *executor) Commit() (hash []byte, err error) {
 }
 
 func (exe *executor) Reset() error {
+	exe.Lock()
+	defer exe.Unlock()
 	exe.stateCache.Reset(exe.state)
 	exe.nameRegCache.Reset(exe.state)
 	return nil
@@ -246,7 +220,6 @@ func (exe *executor) Execute(tx txs.Tx) (err error) {
 			exe.stateCache.UpdateAccount(acc)
 		}
 
-		// if the exe.eventCache is nil, nothing will happen
 		if exe.eventCache != nil {
 			for _, i := range tx.Inputs {
 				events.PublishAccountInput(exe.eventCache, i.Address, txHash, tx, nil, "")
@@ -273,6 +246,7 @@ func (exe *executor) Execute(tx txs.Tx) (err error) {
 			return txs.ErrTxInvalidAddress
 		}
 
+		// Calling a nil destination is defined as requesting contract creation
 		createContract := tx.Address == nil
 		if createContract {
 			if !hasCreateContractPermission(exe.stateCache, inAcc, logger) {
@@ -350,7 +324,7 @@ func (exe *executor) Execute(tx txs.Tx) (err error) {
 				callee  acm.MutableAccount = nil // initialized below
 				code    []byte             = nil
 				ret     []byte             = nil
-				txCache                    = state.NewCache(exe.stateCache)
+				txCache                    = state.NewCache(exe.stateCache, state.Name("TxCache"))
 				params                     = evm.Params{
 					BlockHeight: exe.tip.LastBlockHeight(),
 					BlockHash:   binary.LeftPadWord256(exe.tip.LastBlockHash()),
