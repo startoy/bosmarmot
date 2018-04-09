@@ -8,6 +8,12 @@
   version = "v0.3.0"
 
 [[projects]]
+  name = "github.com/OneOfOne/xxhash"
+  packages = ["."]
+  revision = "4e9e81466dc37c9fd94ce9ecf42020ef54112203"
+  version = "v1.2.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/btcsuite/btcd"
   packages = ["btcec"]
@@ -17,18 +23,6 @@
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
-  version = "v1.1.0"
-
-[[projects]]
-  name = "github.com/eapache/channels"
-  packages = ["."]
-  revision = "47238d5aae8c0fefd518ef2bee46290909cf8263"
-  version = "v1.1.0"
-
-[[projects]]
-  name = "github.com/eapache/queue"
-  packages = ["."]
-  revision = "44cc805cf13205b55f69e14bcb69867d1ae92f98"
   version = "v1.1.0"
 
 [[projects]]
@@ -196,8 +190,6 @@
     "genesis",
     "keys",
     "logging",
-    "logging/errors",
-    "logging/loggers",
     "logging/structure",
     "permission",
     "permission/snatives",
@@ -208,9 +200,10 @@
     "rpc/tm",
     "rpc/tm/client",
     "rpc/v0/server",
+    "sync",
     "txs"
   ]
-  revision = "989b62b2242293d0118a54df64a5c047214f21e7"
+  revision = "a3f2b9251b2ce4f21b2993f1b6918c4ce7fe2d5d"
 
 [[projects]]
   name = "github.com/inconshreveable/mousetrap"
