@@ -14,7 +14,7 @@ ValidatorAddress = "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B"
     [RPC.V0.Server]
       ChainId = ""
       [RPC.V0.Server.bind]
-        address = ""
+        address = "localhost"
         port = 1339
       [RPC.V0.Server.TLS]
         tls = false
@@ -33,7 +33,7 @@ ValidatorAddress = "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B"
         write_buffer_size = 4096
 
   [RPC.TM]
-    ListenAddress = ":48003"
+    ListenAddress = "tcp://localhost:48003"
 
 [Logging]
   [Logging.RootSink]

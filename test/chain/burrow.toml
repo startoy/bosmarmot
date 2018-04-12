@@ -14,7 +14,7 @@ ValidatorAddress = "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B"
     [RPC.V0.Server]
       ChainId = ""
       [RPC.V0.Server.bind]
-        address = ""
+        address = "localhost"
         port = 1339
       [RPC.V0.Server.TLS]
         tls = false
@@ -33,44 +33,10 @@ ValidatorAddress = "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B"
         write_buffer_size = 4096
 
   [RPC.TM]
-    ListenAddress = ":48003"
+    ListenAddress = "tcp://localhost:48003"
 
 [Logging]
   [Logging.RootSink]
-
-    [[Logging.RootSink.Sinks]]
-      [Logging.RootSink.Sinks.Transform]
-        TransformType = "prune"
-        [Logging.RootSink.Sinks.Transform.PruneConfig]
-          Keys = ["trace", "run_id"]
-
-      [[Logging.RootSink.Sinks.Sinks]]
-        [Logging.RootSink.Sinks.Sinks.Transform]
-          TransformType = "filter"
-          [Logging.RootSink.Sinks.Sinks.Transform.FilterConfig]
-            FilterMode = "include_when_all_match"
-
-            [[Logging.RootSink.Sinks.Sinks.Transform.FilterConfig.Predicates]]
-              KeyRegex = "log_channel"
-              ValueRegex = "Info"
-
-        [[Logging.RootSink.Sinks.Sinks.Sinks]]
-          [Logging.RootSink.Sinks.Sinks.Sinks.Transform]
-            TransformType = "filter"
-            [Logging.RootSink.Sinks.Sinks.Sinks.Transform.FilterConfig]
-              FilterMode = "exclude_when_any_match"
-
-              [[Logging.RootSink.Sinks.Sinks.Sinks.Transform.FilterConfig.Predicates]]
-                KeyRegex = "component"
-                ValueRegex = "Tendermint"
-
-              [[Logging.RootSink.Sinks.Sinks.Sinks.Transform.FilterConfig.Predicates]]
-                KeyRegex = "module"
-                ValueRegex = "p2p"
-
-              [[Logging.RootSink.Sinks.Sinks.Sinks.Transform.FilterConfig.Predicates]]
-                KeyRegex = "module"
-                ValueRegex = "mempool"
-          [Logging.RootSink.Sinks.Sinks.Sinks.Output]
-            OutputType = "stderr"
-            Format = "json"
+    [Logging.RootSink.Output]
+      OutputType = "stderr"
+      Format = ""
