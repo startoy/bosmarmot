@@ -59,16 +59,28 @@ npm_install:
 	@cd legacy-contracts.js && npm install
 
 # Run tests including integration tests
-.PHONY:	test_integration
-test_integration: build_bin bin/solc bin/burrow
-	@TEST=record scripts/bin_wrapper.sh test/run_js_tests.sh
+.PHONY:	test_integration_bos
+test_integration_bos: build_bin bin/solc bin/burrow
 	@scripts/bin_wrapper.sh monax/tests/test_jobs.sh
 
+.PHONY:	test_integration_js
+test_integration_js: build_bin bin/solc bin/burrow
+	@TEST=record scripts/bin_wrapper.sh test/run_js_tests.sh
+
+.PHONY:	test_integration
+test_integration: test_integration_bos test_integration_js
+
 # Use a provided/local Burrow
-.PHONY:	test_integration_no_burrow
-test_integration_no_burrow: build_bin bin/solc
+.PHONY:	test_integration_js_no_burrow
+test_integration_js_no_burrow: build_bin bin/solc
+	@TEST=record scripts/bin_wrapper.sh test/run_js_tests.sh
+
+.PHONY:	test_integration_bos_no_burrow
+test_integration_bos_no_burrow: build_bin bin/solc
 	@scripts/bin_wrapper.sh monax/tests/test_jobs.sh
-	@TEST=record test/run_js_tests.sh
+
+PHONY:	test_integration_no_burrow
+test_integration_no_burrow: test_integration_bos_no_burrow test_integration_js_no_burrow
 
 ### Vendoring
 

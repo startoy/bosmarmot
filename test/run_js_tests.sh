@@ -27,6 +27,8 @@ test_exit=0
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 chain_dir="${script_dir}/chain"
+log_dir="${script_dir}/logs"
+mkdir -p ${log_dir}
 js_dir="${script_dir}/../legacy-contracts.js"
 
 if [[ "$debug" = true ]]; then
@@ -40,11 +42,11 @@ set -e
 # Ports etc must match those in burrow.toml
 keys_port=48002
 rpc_tm_port=48003
-burrow_root="${script_dir}/.burrow"
+burrow_root="${chain_dir}/.burrow"
 
 # Temporary logs
-keys_log="${script_dir}/keys.log"
-burrow_log="${script_dir}/burrow.log"
+keys_log="${log_dir}/keys.log"
+burrow_log="${log_dir}/burrow.log"
 #
 # ----------------------------------------------------------
 
@@ -118,7 +120,7 @@ test_teardown(){
   echo ""
   if [[ "$test_exit" -eq 0 ]]
   then
-    [[ "$boot" = true ]] && rm -f "$burrow_log" "$keys_log"
+    [[ "$boot" = true ]] && rm -rf "$log_dir"
     echo "Tests complete! Tests are Green. :)"
   else
     echo "Tests complete. Tests are Red. :("
