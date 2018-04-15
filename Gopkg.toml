@@ -10,6 +10,11 @@
     non-go = false
 
 [[constraint]]
+  name = "github.com/tendermint/go-wire"
+  source = "github.com/tendermint/go-amino"
+  version = "~0.7.3"
+
+[[constraint]]
   name = "github.com/hyperledger/burrow"
   branch = "develop"
 
