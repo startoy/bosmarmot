@@ -85,7 +85,7 @@ test_setup(){
     sleep 1
     echo "Starting Burrow with tendermint port: $tendermint_port, tm RPC port: $rpc_tm_port"
     rm -rf ${burrow_root}
-    ${burrow_bin} 2> "$burrow_log" &
+    ${burrow_bin} serve 2> "$burrow_log" &
     burrow_pid=$!
 
   else
