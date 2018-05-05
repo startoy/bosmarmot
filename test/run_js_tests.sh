@@ -78,7 +78,7 @@ test_setup(){
     echo "Starting Burrow with tendermint port: $tendermint_port, tm RPC port: $rpc_tm_port"
     rm -rf ${burrow_root}
 
-    ${burrow_bin} -c "${chain_dir}/burrow.toml" -g "${chain_dir}/genesis.json" 2> "$burrow_log" &
+    ${burrow_bin} serve -c "${chain_dir}/burrow.toml" -g "${chain_dir}/genesis.json" 2> "$burrow_log" &
     burrow_pid=$!
 
     sleep 1
