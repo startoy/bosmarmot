@@ -31,7 +31,8 @@
                 "Gas": 999985
               },
               "Origin": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
-              "TxID": "56138F976D6D0DD14EBF38771F2001F9280B2624",
+              "TxHash": "56138F976D6D0DD14EBF38771F2001F9280B2624",
+              "StackDepth": 0,
               "Return": "606060405260E060020A600035046360FE47B1811460245780636D4CE63C14602E575B005B6004356000556022565B6000546060908152602090F3",
               "Exception": ""
             },
@@ -70,7 +71,8 @@
                 "Gas": 999967
               },
               "Origin": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
-              "TxID": "06601173408AF45520BF4720D3FF4DBA5894CEB6",
+              "TxHash": "06601173408AF45520BF4720D3FF4DBA5894CEB6",
+              "StackDepth": 0,
               "Return": "",
               "Exception": ""
             },

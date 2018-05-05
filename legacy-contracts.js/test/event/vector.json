@@ -31,7 +31,8 @@
                 "Gas": 999985
               },
               "Origin": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
-              "TxID": "0B34A9E4E07DF7892139F9D21BA349AEE3639F0D",
+              "TxHash": "0B34A9E4E07DF7892139F9D21BA349AEE3639F0D",
+              "StackDepth": 0,
               "Return": "606060405260E060020A60003504633BDAB8BF8114601A575B005B601873FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF331660609081527F50D7C806D0F7913F321946784DEE176A42AA55B5DD83371FC57DCEDF659085E090602090A156",
               "Exception": ""
             },
@@ -95,7 +96,8 @@
                 "Gas": 999956
               },
               "Origin": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
-              "TxID": "EF1F0E929558BC8038DFCC62A9D7163A81040FEF",
+              "TxHash": "EF1F0E929558BC8038DFCC62A9D7163A81040FEF",
+              "StackDepth": 0,
               "Return": "",
               "Exception": ""
             },
@@ -134,7 +136,8 @@
                 "Gas": 999956
               },
               "Origin": "0CC835E75E6E3DD60195F2AF69B4AA9BEFFA6D2B",
-              "TxID": "6C08D90A0840DFAF189CFA2B7EFA1FAE74EB3A9E",
+              "TxHash": "6C08D90A0840DFAF189CFA2B7EFA1FAE74EB3A9E",
+              "StackDepth": 0,
               "Return": "",
               "Exception": ""
             },
