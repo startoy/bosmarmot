@@ -7,4 +7,5 @@ RUN apk add --update --no-cache nodejs netcat-openbsd git make bash gcc g++ jq
 RUN go get github.com/jstemmer/go-junit-report
 RUN go get -u github.com/golang/dep/cmd/dep
 RUN npm install -g mocha
+RUN npm install -g standard
 RUN npm install -g mocha-circleci-reporter

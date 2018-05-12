@@ -5,9 +5,6 @@
  * @module blockchain
  */
 'use strict'
-
-var util = require('./util')
-var nUtil = require('util')
 /**
  * Create a new instance of the BlockChain class.
  *
@@ -26,10 +23,8 @@ exports.createInstance = function (server) {
  * @constructor
  */
 function BlockChain (server) {
-  util.ComponentBase.call(this, server)
+  this.server = server
 }
-
-nUtil.inherits(BlockChain, util.ComponentBase)
 
 /**
  * Get blockchain info.

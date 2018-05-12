@@ -7,9 +7,6 @@
 
 'use strict'
 
-var util = require('./util')
-var nUtil = require('util')
-
 var COST_PER_BLOCK = 1
 var COST_PER_BYTE = 1
 
@@ -21,8 +18,8 @@ var COST_PER_BYTE = 1
  * @param {module:events~Events} events - The events object.
  * @returns {NameReg} - A new instance of the NameReg class.
  */
-exports.createInstance = function (server, unsafe, events) {
-  return new NameReg(server, unsafe, events)
+exports.createInstance = function (server, events) {
+  return new NameReg(server, events)
 }
 
 /**
@@ -34,12 +31,10 @@ exports.createInstance = function (server, unsafe, events) {
  * @augments module:util~ComponentBase
  * @constructor
  */
-function NameReg (server, unsafe, events) {
-  util.UnsafeComponentBase.call(this, server, unsafe)
+function NameReg (server, events) {
+  this.server = server
   this._events = events
 }
-
-nUtil.inherits(NameReg, util.UnsafeComponentBase)
 
 /**
  * Get a list of entries.
@@ -97,25 +92,23 @@ NameReg.prototype.getEntry = function (name, callback) {
  * Transact to the name registry. The name registry is essentially a distributed key-value store that comes
  * with the client.
  *
- * Note: This requires a private key to be sent to the blockchain client.
- *
- * @param {string} privKey - The private key that will be used to sign the transaction.
+ * @param {string} inputAccount - The inputAccount that will be used to sign the transaction.
  * @param {string} name - The key, or name.
  * @param {string} data - The data that should be stored.
  * @param {number} numBlocks - The amount of blocks until the data expires.
  * @param {module:rpc/rpc~methodCallback} callback - The callback function.
  */
-NameReg.prototype.setEntry = function (privKey, name, data, numBlocks, callback) {
+NameReg.prototype.setEntry = function (inputAccount, name, data, numBlocks, callback) {
   var
     nameRegistry, cost
 
   nameRegistry = this
   cost = this.calculateCost(numBlocks, data)
 
-  this._unsafe.transactNameReg(privKey, name, data, cost, 0, null, function (error) {
+  this.transactNameReg(inputAccount, name, data, cost, 0, function (error) {
     if (error) { callback(error) } else {
-        // Watch the new block being formed and call back when we can get the
-        // entry after setting it.
+      // Watch the new block being formed and call back when we can get the
+      // entry after setting it.
       nameRegistry._events.subNewBlocks(function (error) {
         if (error) { callback(error) } else {
           nameRegistry.getEntry(name, function (error, data) {
@@ -129,4 +122,35 @@ NameReg.prototype.setEntry = function (privKey, name, data, numBlocks, callback)
 
 NameReg.prototype.calculateCost = function (numBlocks, data) {
   return COST_PER_BLOCK * COST_PER_BYTE * (data.length + 32) * numBlocks
+}
+
+/**
+ * Transact to the name registry. The name registry is essentially a distributed key-value store that comes
+ * with the client. Accessing the registry is done via the NameReg.
+ *
+ * @param {string} inputAccount - The inputAccount that will be used to sign the transaction.
+ * @param {string} name - The key, or name.
+ * @param {string} data - The data that should be stored.
+ * @param {number} amount - The amount of tokens to send.
+ * @param {number} fee - The fee.
+ * @param {*} context - an object containing information for the validator.
+ * @param {module:rpc/rpc~methodCallback} callback - The callback function.
+ */
+NameReg.prototype.transactNameReg = function (inputAccount, name, data, amount, fee, callback) {
+  // 'name' must be a non-empty string.
+  if (!name || typeof (name) !== 'string') {
+    callback(new Error("'name' is empty."))
+  }
+  // 'data' must be a string.
+  if (typeof (data) !== 'string') {
+    callback(new Error("'data' is not a string."))
+  }
+
+  this.server.transactNameReg({
+    inputAccount: inputAccount,
+    name,
+    data,
+    amount,
+    fee
+  }, callback)
 }

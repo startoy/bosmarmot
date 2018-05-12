@@ -19,13 +19,13 @@ module.exports = (transport) => {
   newRequest.method(
     [{
       params: {
-        sub_id: is(String)
+        subId: is(String)
       }
     }],
     (request) =>
       R.assocPath(
-        ['params', 'sub_id'],
-        subIds.get(request.params.sub_id),
+        ['params', 'subId'],
+        subIds.get(request.params.subId),
         request
       )
   )
@@ -45,9 +45,9 @@ module.exports = (transport) => {
     }],
     (response) =>
       R.assocPath(['result', 'events'], response.result.events.map((event) => {
-          event.EventDataLog.Height = 1
-          return event
-        }
+        event.EventDataLog.Height = 1
+        return event
+      }
       ), response)
   )
 
@@ -55,13 +55,13 @@ module.exports = (transport) => {
   newResponse.method(
     [{
       result: {
-        sub_id: is(String)
+        subId: is(String)
       }
     }],
     (response) => {
       const newId = String(subIds.size)
-      subIds.set(newId, response.result.sub_id)
-      return R.assocPath(['result', 'sub_id'], newId, response)
+      subIds.set(newId, response.result.subId)
+      return R.assocPath(['result', 'subId'], newId, response)
     }
   )
 
@@ -71,10 +71,10 @@ module.exports = (transport) => {
   newResponse.method([{
     id: is(String),
     result: {
-      tx_hash: is(String)
+      TxHash: is(String)
     }
   }], (response) =>
-    R.assocPath(['result', 'tx_hash'], response.id, response)
+    R.assocPath(['result', 'TxHash'], response.id, response)
   )
 
   return (input) =>

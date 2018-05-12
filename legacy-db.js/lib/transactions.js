@@ -7,7 +7,6 @@
 'use strict'
 
 var util = require('./util')
-var nUtil = require('util')
 
 /**
  * Create a new instance of the Transactions class.
@@ -16,8 +15,8 @@ var nUtil = require('util')
  * @param {module:unsafe~Unsafe} unsafe - The unsafe object.
  * @returns {Transactions} - A new instance of the Transactions class.
  */
-exports.createInstance = function (server, unsafe) {
-  return new Transactions(server, unsafe)
+exports.createInstance = function (server) {
+  return new Transactions(server)
 }
 
 /**
@@ -28,11 +27,9 @@ exports.createInstance = function (server, unsafe) {
  * @augments module:util~ComponentBase
  * @constructor
  */
-function Transactions (server, unsafe) {
-  util.UnsafeComponentBase.call(this, server, unsafe)
+function Transactions (server) {
+  this.server = server
 }
-
-nUtil.inherits(Transactions, util.UnsafeComponentBase)
 
 /**
  * Get a list of all unconfirmed transactions.
@@ -119,42 +116,9 @@ Transactions.prototype.callCode = function (fromAddress, code, data, callback) {
 }
 
 /**
- * Send to the account at the given address.
- *
- * Note: This requires a private key to be sent to the blockchain client.
- *
- * @param {string} privKey - The private key that will be used to sign.
- * @param {string} toAddress - The target account address.
- * @param {number} amount - The amount to send.
- * @param {*} context - an object containing information for the validator.
- * @param {module:rpc/rpc~methodCallback} callback - The callback function.
- */
-Transactions.prototype.send = function (privKey, toAddress, amount, context,
-  callback) {
-  this._unsafe.send(privKey, toAddress, amount, context, callback)
-}
-
-/**
- * Transact to the account at the given address, and hold until the transaction has
- * been committed to a block (or not).
- *
- * @param {string} privKey - The private key that will be used to sign.
- * @param {string} toAddress - The target account address.
- * @param {number} amount - The amount to send.
- * @param {*} context - an object containing information for the validator.
- * @param {module:rpc/rpc~methodCallback} callback - The callback function.
- */
-Transactions.prototype.sendAndHold = function (privKey, toAddress, amount,
-  context, callback) {
-  this._unsafe.sendAndHold(privKey, toAddress, amount, context, callback)
-}
-
-/**
  * Transact to the account at the given address.
  *
- * Note: This requires a private key to be sent to the blockchain client.
- *
- * @param {string} privKey - The private key that will be used to sign.
+ * @param {string} inputAccount - The account that will be used to sign.
  * @param {string} address - The address to the account holding the code. Set it to null if
  * doing a tx create.
  * @param {string} data - The input data.
@@ -163,20 +127,30 @@ Transactions.prototype.sendAndHold = function (privKey, toAddress, amount,
  * @param {*} context - an object containing information for the validator.
  * @param {module:rpc/rpc~methodCallback} callback - The callback function.
  */
-Transactions.prototype.transact = function (privKey, address, data, gasLimit, fee, context, callback) {
-  this._unsafe.transact(privKey, address, data, gasLimit, fee, context, function (error, data) {
-    if (error) return callback(error)
-    callback(null, data)
-  })
+Transactions.prototype.transact = function (inputAccount, address, data, gasLimit, fee, callback) {
+  if (address !== '') {
+    if (!util.isAddress(address)) {
+      callback(new Error("'address' is not a proper address string."))
+    }
+  }
+  if (!util.isHex(data)) {
+    callback(new Error("'data' is not a proper hex string."))
+  }
+
+  this.server.transact({
+    inputAccount: inputAccount,
+    address,
+    data,
+    gasLimit: gasLimit,
+    fee
+  }, callback)
 }
 
 /**
  * Transact to the account at the given address, and hold until the transaction has
  * been committed to a block (or not).
  *
- * Note: This requires a private key to be sent to the blockchain client.
- *
- * @param {string} privKey - The private key that will be used to sign.
+ * @param {string} priv_key - The account that will be used to sign.
  * @param {string} address - The address to the account holding the code. Set it to null if
  * doing a tx create.
  * @param {string} data - The input data.
@@ -185,27 +159,64 @@ Transactions.prototype.transact = function (privKey, address, data, gasLimit, fe
  * @param {*} context - an object containing information for the validator.
  * @param {module:rpc/rpc~methodCallback} callback - The callback function.
  */
-Transactions.prototype.transactAndHold = function (privKey, address, data, gasLimit, fee, context, callback) {
-  this._unsafe.transactAndHold(privKey, address, data, gasLimit, fee, context, function (error, data) {
-    if (error) return callback(error)
-    callback(null, data)
-  })
+Transactions.prototype.transactAndHold = function (inputAccount, address, data, gasLimit, fee, callback) {
+  if (address !== '') {
+    if (!util.isAddress(address)) {
+      callback(new Error("'address' is not a proper address string."))
+    }
+  }
+  if (!util.isHex(data)) {
+    callback(new Error("'data' is not a proper hex string."))
+  }
+  var param = {inputAccount: inputAccount, address, data, gasLimit: gasLimit, fee}
+  this.server.transactAndHold(param, callback)
 }
 
 /**
- * Transact to the name registry. The name registry is essentially a distributed key-value store that comes
- * with the client. Accessing the registry is done via the NameReg.
+ * Send to the account at the given address.
  *
- * Note: This requires a private key to be sent to the blockchain client.
+ * Note: This requires a account to be sent to the blockchain client.
  *
- * @param {string} privKey - The private key that will be used to sign.
- * @param {string} name - The key, or name.
- * @param {string} data - The data that should be stored.
- * @param {number} amount - The amount of tokens to send.
- * @param {number} fee - The fee.
+ * @param {string} inputAccount - The account that will be used to sign.
+ * @param {string} toAddress - The target account address.
+ * @param {number} amount - The amount to send.
  * @param {*} context - an object containing information for the validator.
  * @param {module:rpc/rpc~methodCallback} callback - The callback function.
  */
-Transactions.prototype.transactNameReg = function (privKey, name, data, amount, fee, context, callback) {
-  this._unsafe.transactNameReg(privKey, name, data, amount, fee, context, callback)
+Transactions.prototype.send = function (inputAccount, toAddress, amount, callback) {
+  if (toAddress !== '') {
+    if (!util.isAddress(toAddress)) {
+      callback(new Error("'address' is not a proper address string."))
+    }
+  }
+
+  this.server.send({
+    inputAccount: inputAccount,
+    toAddress: toAddress,
+    amount
+  }, callback)
+}
+
+/**
+ * Transact to the account at the given address, and hold until the transaction has
+ * been committed to a block (or not).
+ *
+ * @param {string} inputAccount - The account that will be used to sign.
+ * @param {string} toAddress - The target account address.
+ * @param {number} amount - The amount to send.
+ * @param {*} context - an object containing information for the validator.
+ * @param {module:rpc/rpc~methodCallback} callback - The callback function.
+ */
+Transactions.prototype.sendAndHold = function (inputAccount, toAddress, amount, callback) {
+  if (toAddress !== '') {
+    if (!util.isAddress(toAddress)) {
+      callback(new Error("'address' is not a proper address string."))
+    }
+  }
+
+  this.server.sendAndHold({
+    inputAccount: inputAccount,
+    toAddress: toAddress,
+    amount
+  }, callback)
 }

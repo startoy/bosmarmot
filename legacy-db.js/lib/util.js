@@ -5,32 +5,6 @@
  * @module util
  */
 'use strict'
-var nUtil = require('util')
-
-/**
- * ComponentBase is used for all Thelonious API components.
- *
- * @param {module:rpc/client~Client} client - A client object.
- * @constructor
- */
-function ComponentBase (server) {
-  this.server = server
-}
-
-/**
- * UnsafeComponentBase is used for all Thelonious API components that makes use
- * of the unsafe class.
- *
- * @param {module:rpc/client~Client} client - A client object.
- * @param {module:unsafe~Unsafe} unsafe - The unsafe object.
- * @constructor
- */
-function UnsafeComponentBase (server, unsafe) {
-  ComponentBase.call(this, server)
-  this._unsafe = unsafe
-}
-
-nUtil.inherits(UnsafeComponentBase, ComponentBase)
 
 exports.createFilter = function (field, op, value) {
   if (typeof (value) !== 'string') {
@@ -84,20 +58,6 @@ function isPubKey (str) {
 function isPrivKey (str) {
   return typeof (str) === 'string' && str.match(privRe)
 }
-
-/**
- * Constructor for the ComponentBase class.
- *
- * @type {function}
- */
-exports.ComponentBase = ComponentBase
-
-/**
- * Constructor for the UnsafeComponentBase class.
- *
- * @type {function}
- */
-exports.UnsafeComponentBase = UnsafeComponentBase
 
 /**
  * @type {isHex}

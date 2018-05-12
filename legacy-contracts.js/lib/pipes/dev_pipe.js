@@ -30,35 +30,17 @@ module.exports = DevPipe
  *
  * @constructor
  */
-function DevPipe (burrow, accounts) {
+function DevPipe (burrow, account, options) {
   Pipe.call(this, burrow)
-  var ad
-  // For read-only acccess.
-  if (!accounts) {
-    ad = _createAccountData()
-  } else if (typeof (accounts) === 'string') {
-    console.log('DEPRECATED: Do not pass a private key (string) to DevPipe; use the accountData or accountData[] forms.')
-    // Interpreted as a private key.
-    ad = _createAccountData([{
-      address: ZERO_ADDRESS,
-      pubKey: '',
-      privKey: accounts
-    }])
-  } else if (accounts instanceof Array) {
-    for (var i = 0; i < accounts.length; i++) {
-      if (!_checkAccountData(accounts[i])) {
-        throw new Error('Account data is not on the proper format: ' + JSON.stringify(accounts[i]))
-      }
-    }
-    ad = _createAccountData(accounts)
+
+  // Choose signing mode
+  this._options = Object.assign({signbyaddress: false, readonly: false}, options)
+
+  if (!account) {
+    this._options.readonly = true
   } else {
-    if (_checkAccountData(accounts)) {
-      ad = _createAccountData([accounts])
-    } else {
-      throw new Error('Account data is not on the proper format: ' + JSON.stringify(accounts))
-    }
+    this._account = _formatAccount(account, this._options.signbyaddress)
   }
-  this._accountData = ad
 }
 
 nUtil.inherits(DevPipe, Pipe)
@@ -74,21 +56,19 @@ DevPipe.prototype.transact = function (txPayload, callback) {
   var from
 
   if (txPayload.from) {
-    var fromAcc = this._accountData.accounts[txPayload.from]
-    if (!fromAcc) {
-      callback(new Error('No account matches the provided address/ID: ' + txPayload.from))
-      return
+    try {
+      from = _formatAccount(txPayload.from)
+    } catch (err) {
+      return callback(new Error('No account matches the provided address/ID: ' + txPayload.from))
     }
-    from = fromAcc.privKey
   } else {
-    var defAcc = this._accountData.default
-    if (!defAcc) {
-      callback(new Error('No account address provided, and no default account has been set.'))
-      return
+    if (this._options.readonly) {
+      return callback(new Error('Pipe is readonly and no account address provided'))
     }
-    from = this._accountData.accounts[defAcc].privKey
+
+    from = this._account
   }
-  this._burrow.txs().transactAndHold(from, to, txPayload.data, config.DEFAULT_GAS, config.DEFAULT_FEE, null, function (error, data) {
+  this._burrow.txs().transactAndHold(from, to, txPayload.data, config.DEFAULT_GAS, config.DEFAULT_FEE, function (error, data) {
     if (error) {
       console.log(error)
       callback(error)
@@ -111,7 +91,7 @@ DevPipe.prototype.call = function (txPayload, callback) {
   var address = txPayload.to
   var from = txPayload.from
   if (!from) {
-    from = this._accountData.default
+    from = ZERO_ADDRESS
   }
   var data = txPayload.data
   if (data.length > 1 && data.slice(0, 2) === '0x') {
@@ -126,66 +106,33 @@ DevPipe.prototype.call = function (txPayload, callback) {
   })
 }
 
-DevPipe.prototype.addAccount = function (accountData) {
-  if (this._accountData.accounts[accountData.address]) {
-    throw new Error('Account is already registered. Remove the existing account first.')
+function _formatAccount (account, signbyaddress) {
+  var ad = {
+    address: undefined,
+    privateKey: undefined
   }
-  this._accountData.accounts[accountData.address] = accountData
-}
 
-DevPipe.prototype.removeAccount = function (accountAddress) {
-  var acc = this._accountData.accounts[accountAddress]
-  if (!acc) {
-    throw new Error('Account does not exist.')
-  }
-  delete this._accountData.accounts[accountAddress]
-  if (this._accountData.default.address === accountAddress) {
-    this._accountData.default = null
-  }
-}
-
-DevPipe.prototype.setDefaultAccount = function (accountAddress) {
-  var acc = this._accountData.accounts[accountAddress]
-  if (!acc) {
-    throw new Error('Account does not exist.')
-  }
-  this._accountData.default = accountAddress
-}
-
-DevPipe.prototype.hasAccount = function (accountAddress) {
-  return !!this._accountData.accounts[accountAddress]
-}
-
-function _createAccountData (accounts) {
-  var accountData = {}
-  accountData.accounts = {}
-  if (accounts && accounts.length > 0) {
-    accountData.default = accounts[0].address
-    for (var i = 0; i < accounts.length; i++) {
-      accountData.accounts[accounts[i].address] = accounts[i]
+  if (typeof (account) === 'string') {
+    if (signbyaddress) {
+      ad.address = account
+    } else {
+      ad.privateKey = account
     }
-  }
-  return accountData
-}
+  } else if (typeof (account) === 'object') {
+    if (!account.address && !account.privKey) {
+      throw new Error('Account data is not on the proper format: ' + JSON.stringify(account))
+    }
 
-function _checkAccountData (accountData) {
-  // TODO more checks if this system becomes permanent.
-  if (!accountData.privKey || !accountData.address) {
-    return false
+    if (account.address != null && account.privKey != null) {
+      if (signbyaddress === true) {
+        ad.address = account.address
+      } else {
+        ad.privateKey = account.privKey
+      }
+    }
+  } else {
+    throw new Error('Account data is not on the proper format: ' + JSON.stringify(account))
   }
-  // Allow for the tendermint struct with typed fields (field = [typeNum, hexString]), but drop the type number.
-  if (_isTyped(accountData.address)) {
-    accountData.address = accountData.address[1]
-  }
-  if (accountData.pubKey && _isTyped(accountData.pubKey)) {
-    accountData.pubKey = accountData.pubKey[1]
-  }
-  if (_isTyped(accountData.privKey)) {
-    accountData.privKey = accountData.privKey[1]
-  }
-  return true
-}
 
-function _isTyped (keyField) {
-  return keyField instanceof Array && keyField.length === 2 && typeof (keyField[0]) === 'number' && typeof (keyField[1]) === 'string'
+  return ad
 }

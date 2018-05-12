@@ -6,9 +6,6 @@
  */
 'use strict'
 
-var util = require('./util')
-var nUtil = require('util')
-
 /**
  * Create a new instance of the Consensus class.
  *
@@ -28,10 +25,8 @@ exports.createInstance = function (server) {
  * @constructor
  */
 function Consensus (server) {
-  util.ComponentBase.call(this, server)
+  this.server = server
 }
-
-nUtil.inherits(Consensus, util.ComponentBase)
 
 /**
  * Get a list of all validators.

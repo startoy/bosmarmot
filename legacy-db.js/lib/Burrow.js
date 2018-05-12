@@ -14,8 +14,6 @@ var eventsF = require('./events')
 var nameregF = require('./namereg')
 var networkF = require('./network')
 var transactionsF = require('./transactions')
-var unsafeF = require('./unsafe')
-var validation = require('./validation')
 
 /**
  * Create a new instance of the Burrow class.
@@ -24,8 +22,8 @@ var validation = require('./validation')
  * @param {module:validation~Validator} validator - The validator object.
  * @returns {Burrow} - A new instance of the Burrow class.
  */
-exports.createInstance = function (server, validator) {
-  return new Burrow(server, validator)
+exports.createInstance = function (server) {
+  return new Burrow(server)
 }
 
 /**
@@ -35,22 +33,17 @@ exports.createInstance = function (server, validator) {
  * @param {module:validation~Validator} validator - The validator object.
  * @constructor
  */
-function Burrow (server, validator) {
-  if (typeof (validator) === 'undefined' || validator === null) {
-    validator = new validation.SinglePolicyValidator(true)
-  }
+function Burrow (server) {
   this.server = server
-  var unsafe = unsafeF.createInstance(server, validator)
   var events = eventsF.createInstance(server)
 
-  var accounts = accountsF.createInstance(server, unsafe)
+  var accounts = accountsF.createInstance(server)
   var blockChain = blockChainF.createInstance(server)
   var consensus = consensusF.createInstance(server)
-  var namereg = nameregF.createInstance(server, unsafe, events)
+  var namereg = nameregF.createInstance(server, events)
   var network = networkF.createInstance(server)
-  var transactions = transactionsF.createInstance(server, unsafe)
+  var transactions = transactionsF.createInstance(server)
 
-  this._unsafe = unsafe
   this._accounts = accounts
   this._blockChain = blockChain
   this._consensus = consensus
@@ -121,13 +114,4 @@ Burrow.prototype.network = function () {
  */
 Burrow.prototype.txs = function () {
   return this._transactions
-}
-
-/**
- * Set a new validator object.
- *
- * @param {module:validation~Validator} validator - The validator object.
- */
-Burrow.prototype.setValidator = function (validator) {
-  return this._unsafe.setValidator(validator)
 }

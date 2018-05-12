@@ -6,7 +6,6 @@
  */
 'use strict'
 
-var util = require('./util')
 var nUtil = require('util')
 
 // The interval for polling.
@@ -33,19 +32,17 @@ exports.createInstance = function (server) {
  */
 function Events (server) {
   this._pollingInterval = defaultPollingInterval
-  util.ComponentBase.call(this, server)
+  this.server = server
 
-    // Always use "HTTP" style polling for now.
-    // if (client instanceof TWCClient) {
-    //     this._sub = WsEventSub;
-    // } else {
-    //     this._sub = HttpEventSub;
-    // }
+  // Always use "HTTP" style polling for now.
+  // if (client instanceof TWCClient) {
+  //     this._sub = WsEventSub;
+  // } else {
+  //     this._sub = HttpEventSub;
+  // }
 
   this._sub = HttpEventSub
 }
-
-nUtil.inherits(Events, util.ComponentBase)
 
 /**
  * Subscribe to a given event.
@@ -54,7 +51,7 @@ nUtil.inherits(Events, util.ComponentBase)
  * @param {module:rpc/rpc~methodCallback} callback - The callback function.
  */
 Events.prototype.subscribe = function (eventId, callback) {
-  this.server.eventSubscribe({event_id: eventId}, callback)
+  this.server.eventSubscribe({eventId: eventId}, callback)
 }
 
 /**
@@ -64,7 +61,7 @@ Events.prototype.subscribe = function (eventId, callback) {
  * @param {module:rpc/rpc~methodCallback} callback - The callback function.
  */
 Events.prototype.unsubscribe = function (subId, callback) {
-  this.server.eventUnsubscribe({sub_id: subId}, callback)
+  this.server.eventUnsubscribe({subId: subId}, callback)
 }
 
 /**
@@ -75,7 +72,7 @@ Events.prototype.unsubscribe = function (subId, callback) {
  * will receive a (potentially empty) array of events of the given type.
  */
 Events.prototype.poll = function (subId, callback) {
-  this.server.eventPoll({sub_id: subId}, callback)
+  this.server.eventPoll({subId: subId}, callback)
 }
 
 /**
@@ -87,7 +84,7 @@ Events.prototype.poll = function (subId, callback) {
  * @param {module:rpc/rpc~methodCallback} eventCallback - The callback function.
  */
 Events.prototype.subSolidityEvent = function (address, createCallback, eventCallback) {
-    // No need to do another call here...
+  // No need to do another call here...
   this._startEventSub(logEventId(address), createCallback, eventCallback)
 }
 
@@ -100,7 +97,7 @@ Events.prototype.subSolidityEvent = function (address, createCallback, eventCall
  * @param {module:rpc/rpc~methodCallback} eventCallback - The callback function.
  */
 Events.prototype.subLogEvent = function (address, createCallback, eventCallback) {
-    // this._startEventSub(logEventId(address), createCallback, eventCallback);
+  // this._startEventSub(logEventId(address), createCallback, eventCallback);
   createCallback(Error('This functionality is believed to be broken in Burrow.  See https://github.com/hyperledger/burrow/issues/96.'))
 }
 
@@ -330,92 +327,92 @@ EventSub.prototype.getEventId = function () {
   return this._eventId
 }
 
-/**
- * An event subscription type that listens to events being sent over a websocket connection.
- *
- * // TODO change name to more general then "websocket".
- *
- * @param {Events} events - The Events object.
- * @param {string} eventId - The event id.
- * @param {module:rpc/rpc~methodCallback} eventCallback - Callback for handling incoming data. The data
- * will be an array of events.
- * @constructor
- */
-function WsEventSub (events, eventId, eventCallback) {
-  EventSub.call(this, events, eventId, eventCallback)
-}
+// /**
+//  * An event subscription type that listens to events being sent over a websocket connection.
+//  *
+//  * // TODO change name to more general then "websocket".
+//  *
+//  * @param {Events} events - The Events object.
+//  * @param {string} eventId - The event id.
+//  * @param {module:rpc/rpc~methodCallback} eventCallback - Callback for handling incoming data. The data
+//  * will be an array of events.
+//  * @constructor
+//  */
+// function WsEventSub (events, eventId, eventCallback) {
+//   EventSub.call(this, events, eventId, eventCallback)
+// }
 
-nUtil.inherits(WsEventSub, EventSub)
+// nUtil.inherits(WsEventSub, EventSub)
 
-/**
- * Start listening for new events.
- *
- * @param {module:rpc/rpc~methodCallback} [callback] - Provides this EventSub instance as data, or an error if it
- * fails to set up a subscription. If omitted, the sub will stop automatically after receiving an event.
- */
-WsEventSub.prototype.start = function (callback) {
-  var once = !callback
-  this._once = once
-  if (once) {
-    callback = this._eventCallback
-  }
-  var errorCallback = once ? this._eventCallback : callback
-  var that = this
-  this._events.subscribe(this._eventId, function (error, data) {
-    if (error) {
-      errorCallback(error)
-      return
-    }
-    var subId = data.sub_id
-    that._subId = subId
-    that._run = true
-    var ec
-    if (once) {
-      ec = function (error, data) {
-        that._eventCallback(error, data)
-        that.stop()
-      }
-    } else {
-      ec = that._eventCallback
-    }
-    that._events.getClient().addCallback(subId, function (err, evt) {
-      if (err) return ec(err)
-      ec(null, evt)
-    })
-    if (!once) {
-      callback(null, that)
-    }
-  })
-}
+// /**
+//  * Start listening for new events.
+//  *
+//  * @param {module:rpc/rpc~methodCallback} [callback] - Provides this EventSub instance as data, or an error if it
+//  * fails to set up a subscription. If omitted, the sub will stop automatically after receiving an event.
+//  */
+// WsEventSub.prototype.start = function (callback) {
+//   var once = !callback
+//   this._once = once
+//   if (once) {
+//     callback = this._eventCallback
+//   }
+//   var errorCallback = once ? this._eventCallback : callback
+//   var that = this
+//   this._events.subscribe(this._eventId, function (error, data) {
+//     if (error) {
+//       errorCallback(error)
+//       return
+//     }
+//     var subId = data.sub_id
+//     that._subId = subId
+//     that._run = true
+//     var ec
+//     if (once) {
+//       ec = function (error, data) {
+//         that._eventCallback(error, data)
+//         that.stop()
+//       }
+//     } else {
+//       ec = that._eventCallback
+//     }
+//     that._events.getClient().addCallback(subId, function (err, evt) {
+//       if (err) return ec(err)
+//       ec(null, evt)
+//     })
+//     if (!once) {
+//       callback(null, that)
+//     }
+//   })
+// }
 
-/**
- * Used to poll manually.
- */
-WsEventSub.prototype.poll = function () {
-  console.log('Cannot poll subscriptions when using a websocket connection; events are forwarded automatically.')
-}
+// /**
+//  * Used to poll manually.
+//  */
+// WsEventSub.prototype.poll = function () {
+//   console.log('Cannot poll subscriptions when using a websocket connection; events are forwarded automatically.')
+// }
 
-/**
- * Stop subscribing. This will send an unsubscribe message to the server.
- *
- * @param {module:rpc/rpc~methodCallback} [closeCallback] - Called when the subscription has been
- * canceled. This is optional, and will overwrite any close callback that was set when starting.
- */
-WsEventSub.prototype.stop = function (closeCallback) {
-  if (typeof (closeCallback) !== 'function') {
-    closeCallback = this._closeCallback
-  }
-  var that = this
-  this._events.unsubscribe(this._subId, function (error, data) {
-    that._events.getClient().removeCallback(that._subId)
-    if (error) {
-      closeCallback(error)
-    } else {
-      closeCallback(null, data)
-    }
-  })
-  this._run = false
-}
+// /**
+//  * Stop subscribing. This will send an unsubscribe message to the server.
+//  *
+//  * @param {module:rpc/rpc~methodCallback} [closeCallback] - Called when the subscription has been
+//  * canceled. This is optional, and will overwrite any close callback that was set when starting.
+//  */
+// WsEventSub.prototype.stop = function (closeCallback) {
+//   if (typeof (closeCallback) !== 'function') {
+//     closeCallback = this._closeCallback
+//   }
+//   var that = this
+//   this._events.unsubscribe(this._subId, function (error, data) {
+//     that._events.getClient().removeCallback(that._subId)
+//     if (error) {
+//       closeCallback(error)
+//     } else {
+//       closeCallback(null, data)
+//     }
+//   })
+//   this._run = false
+// }
 
 /**
  * An event subscription type that polls the server continuously to check whether
@@ -449,9 +446,9 @@ HttpEventSub.prototype.start = function (callback) {
       errorCallback(error)
       return
     }
-    that._subId = data.sub_id
+    that._subId = data.subId
     that._run = true
-        // Start polling.
+    // Start polling.
     setTimeout(function () {
       that._call()
     }, that._events.getPollingInterval())
@@ -467,8 +464,8 @@ HttpEventSub.prototype._call = function () {
     this._events.unsubscribe(this._subId, this._closeCallback)
     return
   }
-    // Poll may return a number of events, so we break it down into multiple
-    // calls to the callback.
+  // Poll may return a number of events, so we break it down into multiple
+  // calls to the callback.
   var that = this
   that.poll()
   if (!this._run) {

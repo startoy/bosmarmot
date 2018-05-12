@@ -15,7 +15,6 @@ const jsonRpc = require('@nodeguy/json-rpc')
 const R = require('ramda')
 const server = require('./lib/server')
 const util = require('util')
-var validation = require('./lib/validation')
 var url = require('url')
 
 const createInstance = generic.function()
@@ -33,8 +32,7 @@ createInstance.method([is(Function)],
       I.forEach(debuglog)
     )
 
-    var validator = new validation.SinglePolicyValidator(true)
-    return Burrow.createInstance(server(logged), validator)
+    return Burrow.createInstance(server(logged))
   }
 )
 
