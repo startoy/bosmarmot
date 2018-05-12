@@ -36,7 +36,9 @@ fix:
 
 .PHONY: test_js
 test_js:
-	@test/run_js_tests.sh
+	@cd legacy-contracts.js && npm test
+	#re-enable after fixing a few things
+	#@cd legacy-db.js && npm test
 
 # Run tests
 .PHONY:	test_bos
@@ -65,7 +67,7 @@ test_integration_bos: build_bin bin/solc bin/burrow
 
 .PHONY:	test_integration_js
 test_integration_js: build_bin bin/solc bin/burrow
-	@TEST=record scripts/bin_wrapper.sh test/run_js_tests.sh
+	@cd legacy-contracts.js && TEST=record ../scripts/bin_wrapper.sh npm test
 
 .PHONY:	test_integration
 test_integration: test_integration_bos test_integration_js
@@ -73,7 +75,7 @@ test_integration: test_integration_bos test_integration_js
 # Use a provided/local Burrow
 .PHONY:	test_integration_js_no_burrow
 test_integration_js_no_burrow: build_bin bin/solc
-	@TEST=record scripts/bin_wrapper.sh test/run_js_tests.sh
+	@cd legacy-contracts.js && TEST=record ../scripts/bin_wrapper.sh npm test
 
 .PHONY:	test_integration_bos_no_burrow
 test_integration_bos_no_burrow: build_bin bin/solc
