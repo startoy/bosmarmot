@@ -6,9 +6,6 @@
  */
 'use strict'
 
-var util = require('./util')
-var nUtil = require('util')
-
 /**
  * Create a new instance of the Network class.
  *
@@ -27,10 +24,8 @@ exports.createInstance = function (server) {
  * @constructor
  */
 function Network (server) {
-  util.ComponentBase.call(this, server)
+  this.server = server
 }
-
-nUtil.inherits(Network, util.ComponentBase)
 
 /**
  * Get the network info.

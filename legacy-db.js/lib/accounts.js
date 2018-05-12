@@ -8,7 +8,6 @@
 'use strict'
 
 var util = require('./util')
-var nUtil = require('util')
 
 /**
  * Create a new instance of the Account class.
@@ -17,8 +16,8 @@ var nUtil = require('util')
  * @param {module:unsafe~Unsafe} unsafe - The unsafe object.
  * @returns {Accounts} - A new instance of the Accounts class.
  */
-exports.createInstance = function (server, unsafe) {
-  return new Accounts(server, unsafe)
+exports.createInstance = function (server) {
+  return new Accounts(server)
 }
 
 /**
@@ -29,11 +28,20 @@ exports.createInstance = function (server, unsafe) {
  * @augments module:util~UnsafeComponentBase
  * @constructor
  */
-function Accounts (server, unsafe) {
-  util.UnsafeComponentBase.call(this, server, unsafe)
+function Accounts (server) {
+  this.server = server
 }
 
-nUtil.inherits(Accounts, util.UnsafeComponentBase)
+/**
+ * Generate a new private account.
+ *
+ * Note: This is an unsafe method which requires a private key to be sent from the blockchain client.
+ *
+ * @param {module:rpc/rpc~methodCallback} callback - The callback function.
+ */
+Accounts.prototype.genPrivAccount = function (callback) {
+  this.server.genPrivAccount(callback)
+}
 
 /**
  * Get a list of accounts.
@@ -112,16 +120,4 @@ Accounts.prototype.getStorageAt = function (address, key, callback) {
     return
   }
   this.server.getStorageAt({address, key}, callback)
-}
-
-/**
- * Generate a new private account.
- *
- * Note: This is an unsafe method which requires a private key to be sent from the blockchain client.
- *
- * @param {*} context - context wildcard object used in validation.
- * @param {module:rpc/rpc~methodCallback} callback - The callback function.
- */
-Accounts.prototype.genPrivAccount = function (context, callback) {
-  this._unsafe.genPrivAccount(context, callback)
 }

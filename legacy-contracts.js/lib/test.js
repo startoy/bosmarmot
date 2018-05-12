@@ -31,7 +31,15 @@ const Vector = () => {
   return Object.assign(Object.create(vector), {
     before: (dirname, options, callback) =>
       vector.before(dirname, options, function ({db, account}) {
-        manager = contractsModule.newContractManager(new DevPipe(db, account))
+        // TODO check the env var SIGNBYADDRESS and pass the appropriate option
+        // to the DevPipe
+        if (process.env.SIGNBYADDRESS) {
+          options = {signbyaddress: (process.env.SIGNBYADDRESS.toLowerCase() === 'true')}
+        } else {
+          options = {signbyaddress: false}
+        }
+
+        manager = contractsModule.newContractManager(new DevPipe(db, account, options))
         if (callback) {
           return callback.call(this, manager)
         }

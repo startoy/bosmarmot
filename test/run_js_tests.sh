@@ -66,7 +66,6 @@ test_setup(){
   echo "  $(type ${burrow_bin}) (version: $(${burrow_bin} --version))"
   echo
 
-  cd "$script_dir"
   # start test chain
   if [[ "$boot" = true ]]; then
     echo "Booting keys then Burrow.."
@@ -75,10 +74,10 @@ test_setup(){
     keys_pid=$!
 
     sleep 1
-    echo "Starting Burrow with tendermint port: $tendermint_port, tm RPC port: $rpc_tm_port"
+    echo "Starting Burrow with tendermint RPC port: $rpc_tm_port"
     rm -rf ${burrow_root}
 
-    ${burrow_bin} serve -c "${chain_dir}/burrow.toml" -g "${chain_dir}/genesis.json" 2> "$burrow_log" &
+    ${burrow_bin} start -c "${chain_dir}/burrow.toml" -g "${chain_dir}/genesis.json" 2> "$burrow_log" &
     burrow_pid=$!
 
     sleep 1
@@ -97,10 +96,10 @@ test_setup(){
 
 
 perform_tests(){
-  echo ""
   cd "$js_dir"
 
-  account=$test_account mocha --recursive --reporter mocha-circleci-reporter ${1}
+  vector=privateKey_vector account=$test_account mocha --recursive --reporter mocha-circleci-reporter ${1}
+  vector=address_vector SIGNBYADDRESS=true account=$test_account mocha --recursive --reporter mocha-circleci-reporter ${1}
 
   test_exit=$?
 }
