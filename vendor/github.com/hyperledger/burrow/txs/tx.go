@@ -21,8 +21,6 @@ import (
 	"io"
 
 	acm "github.com/hyperledger/burrow/account"
-	ptypes "github.com/hyperledger/burrow/permission"
-	"github.com/tendermint/go-wire"
 	"github.com/tendermint/go-wire/data"
 	"golang.org/x/crypto/ripemd160"
 )
@@ -36,23 +34,6 @@ var (
 	ErrTxInvalidPubKey     = errors.New("error invalid pubkey")
 	ErrTxInvalidSignature  = errors.New("error invalid signature")
 )
-
-type ErrTxInvalidString struct {
-	Msg string
-}
-
-func (e ErrTxInvalidString) Error() string {
-	return e.Msg
-}
-
-type ErrTxInvalidSequence struct {
-	Got      uint64
-	Expected uint64
-}
-
-func (e ErrTxInvalidSequence) Error() string {
-	return fmt.Sprintf("Error invalid sequence. Got %d, expected %d", e.Got, e.Expected)
-}
 
 /*
 Tx (Transaction) is an atomic operation on the ledger state.
@@ -95,67 +76,35 @@ var mapper = data.NewMapper(Wrapper{}).
 	RegisterImplementation(&RebondTx{}, "rebond_tx", TxTypeRebond).
 	RegisterImplementation(&PermissionsTx{}, "permissions_tx", TxTypePermissions)
 
-//-----------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------
 
-type (
-	// TODO: replace with sum-type struct like ResultEvent
-	Tx interface {
-		WriteSignBytes(chainID string, w io.Writer, n *int, err *error)
-	}
+// TODO: replace with sum-type struct like ResultEvent
+type Tx interface {
+	WriteSignBytes(chainID string, w io.Writer, n *int, err *error)
+	String() string
+	GetInputs() []TxInput
+	Hash(chainID string) []byte
+	Sign(chainID string, signingAccounts ...acm.AddressableSigner) error
+}
 
-	Wrapper struct {
-		Tx `json:"unwrap"`
-	}
+type Encoder interface {
+	EncodeTx(tx Tx) ([]byte, error)
+}
 
-	Encoder interface {
-		EncodeTx(tx Tx) ([]byte, error)
-	}
+type Decoder interface {
+	DecodeTx(txBytes []byte) (Tx, error)
+}
 
-	Decoder interface {
-		DecodeTx(txBytes []byte) (Tx, error)
-	}
+// BroadcastTx or Transact
+type Receipt struct {
+	TxHash          []byte
+	CreatesContract bool
+	ContractAddress acm.Address
+}
 
-	SendTx struct {
-		Inputs  []*TxInput
-		Outputs []*TxOutput
-	}
-
-	// BroadcastTx or Transact
-	Receipt struct {
-		TxHash          []byte
-		CreatesContract bool
-		ContractAddr    acm.Address
-	}
-
-	NameTx struct {
-		Input *TxInput
-		Name  string
-		Data  string
-		Fee   uint64
-	}
-
-	CallTx struct {
-		Input *TxInput
-		// Pointer since CallTx defines unset 'to' address as inducing account creation
-		Address  *acm.Address
-		GasLimit uint64
-		Fee      uint64
-		Data     []byte
-	}
-
-	TxInput struct {
-		Address   acm.Address
-		Amount    uint64
-		Sequence  uint64
-		Signature acm.Signature
-		PubKey    acm.PublicKey
-	}
-
-	TxOutput struct {
-		Address acm.Address
-		Amount  uint64
-	}
-)
+type Wrapper struct {
+	Tx `json:"unwrap"`
+}
 
 // Wrap the Tx in a struct that allows for go-wire JSON serialisation
 func Wrap(tx Tx) Wrapper {
@@ -189,209 +138,19 @@ func (txw *Wrapper) Unwrap() Tx {
 	return txw.Tx
 }
 
-func (txIn *TxInput) ValidateBasic() error {
-	if len(txIn.Address) != 20 {
-		return ErrTxInvalidAddress
+// Avoid re-hashing the same in-memory Tx
+type txHashMemoizer struct {
+	txHashBytes []byte
+	chainID     string
+}
+
+func (thm *txHashMemoizer) hash(chainID string, tx Tx) []byte {
+	if thm.txHashBytes == nil || thm.chainID != chainID {
+		thm.chainID = chainID
+		thm.txHashBytes = TxHash(chainID, tx)
 	}
-	if txIn.Amount == 0 {
-		return ErrTxInvalidAmount
-	}
-	return nil
+	return thm.txHashBytes
 }
-
-func (txIn *TxInput) WriteSignBytes(w io.Writer, n *int, err *error) {
-	wire.WriteTo([]byte(fmt.Sprintf(`{"address":"%s","amount":%v,"sequence":%v}`, txIn.Address, txIn.Amount, txIn.Sequence)), w, n, err)
-}
-
-func (txIn *TxInput) String() string {
-	return fmt.Sprintf("TxInput{%s,%v,%v,%v,%v}", txIn.Address, txIn.Amount, txIn.Sequence, txIn.Signature, txIn.PubKey)
-}
-
-//-----------------------------------------------------------------------------
-
-func (txOut *TxOutput) ValidateBasic() error {
-	if len(txOut.Address) != 20 {
-		return ErrTxInvalidAddress
-	}
-	if txOut.Amount == 0 {
-		return ErrTxInvalidAmount
-	}
-	return nil
-}
-
-func (txOut *TxOutput) WriteSignBytes(w io.Writer, n *int, err *error) {
-	wire.WriteTo([]byte(fmt.Sprintf(`{"address":"%s","amount":%v}`, txOut.Address, txOut.Amount)), w, n, err)
-}
-
-func (txOut *TxOutput) String() string {
-	return fmt.Sprintf("TxOutput{%s,%v}", txOut.Address, txOut.Amount)
-}
-
-//-----------------------------------------------------------------------------
-
-func (tx *SendTx) WriteSignBytes(chainID string, w io.Writer, n *int, err *error) {
-	wire.WriteTo([]byte(fmt.Sprintf(`{"chain_id":%s`, jsonEscape(chainID))), w, n, err)
-	wire.WriteTo([]byte(fmt.Sprintf(`,"tx":[%v,{"inputs":[`, TxTypeSend)), w, n, err)
-	for i, in := range tx.Inputs {
-		in.WriteSignBytes(w, n, err)
-		if i != len(tx.Inputs)-1 {
-			wire.WriteTo([]byte(","), w, n, err)
-		}
-	}
-	wire.WriteTo([]byte(`],"outputs":[`), w, n, err)
-	for i, out := range tx.Outputs {
-		out.WriteSignBytes(w, n, err)
-		if i != len(tx.Outputs)-1 {
-			wire.WriteTo([]byte(","), w, n, err)
-		}
-	}
-	wire.WriteTo([]byte(`]}]}`), w, n, err)
-}
-
-func (tx *SendTx) String() string {
-	return fmt.Sprintf("SendTx{%v -> %v}", tx.Inputs, tx.Outputs)
-}
-
-//-----------------------------------------------------------------------------
-
-func (tx *CallTx) WriteSignBytes(chainID string, w io.Writer, n *int, err *error) {
-	wire.WriteTo([]byte(fmt.Sprintf(`{"chain_id":%s`, jsonEscape(chainID))), w, n, err)
-	wire.WriteTo([]byte(fmt.Sprintf(`,"tx":[%v,{"address":"%s","data":"%X"`, TxTypeCall, tx.Address, tx.Data)), w, n, err)
-	wire.WriteTo([]byte(fmt.Sprintf(`,"fee":%v,"gas_limit":%v,"input":`, tx.Fee, tx.GasLimit)), w, n, err)
-	tx.Input.WriteSignBytes(w, n, err)
-	wire.WriteTo([]byte(`}]}`), w, n, err)
-}
-
-func (tx *CallTx) String() string {
-	return fmt.Sprintf("CallTx{%v -> %s: %X}", tx.Input, tx.Address, tx.Data)
-}
-
-//-----------------------------------------------------------------------------
-
-func (tx *NameTx) WriteSignBytes(chainID string, w io.Writer, n *int, err *error) {
-	wire.WriteTo([]byte(fmt.Sprintf(`{"chain_id":%s`, jsonEscape(chainID))), w, n, err)
-	wire.WriteTo([]byte(fmt.Sprintf(`,"tx":[%v,{"data":%s,"fee":%v`, TxTypeName, jsonEscape(tx.Data), tx.Fee)), w, n, err)
-	wire.WriteTo([]byte(`,"input":`), w, n, err)
-	tx.Input.WriteSignBytes(w, n, err)
-	wire.WriteTo([]byte(fmt.Sprintf(`,"name":%s`, jsonEscape(tx.Name))), w, n, err)
-	wire.WriteTo([]byte(`}]}`), w, n, err)
-}
-
-func (tx *NameTx) ValidateStrings() error {
-	if len(tx.Name) == 0 {
-		return ErrTxInvalidString{"Name must not be empty"}
-	}
-	if len(tx.Name) > MaxNameLength {
-		return ErrTxInvalidString{fmt.Sprintf("Name is too long. Max %d bytes", MaxNameLength)}
-	}
-	if len(tx.Data) > MaxDataLength {
-		return ErrTxInvalidString{fmt.Sprintf("Data is too long. Max %d bytes", MaxDataLength)}
-	}
-
-	if !validateNameRegEntryName(tx.Name) {
-		return ErrTxInvalidString{fmt.Sprintf("Invalid characters found in NameTx.Name (%s). Only alphanumeric, underscores, dashes, forward slashes, and @ are allowed", tx.Name)}
-	}
-
-	if !validateNameRegEntryData(tx.Data) {
-		return ErrTxInvalidString{fmt.Sprintf("Invalid characters found in NameTx.Data (%s). Only the kind of things found in a JSON file are allowed", tx.Data)}
-	}
-
-	return nil
-}
-
-func (tx *NameTx) String() string {
-	return fmt.Sprintf("NameTx{%v -> %s: %s}", tx.Input, tx.Name, tx.Data)
-}
-
-//-----------------------------------------------------------------------------
-
-type BondTx struct {
-	PubKey    acm.PublicKey
-	Signature acm.Signature
-	Inputs    []*TxInput
-	UnbondTo  []*TxOutput
-}
-
-func (tx *BondTx) WriteSignBytes(chainID string, w io.Writer, n *int, err *error) {
-	wire.WriteTo([]byte(fmt.Sprintf(`{"chain_id":%s`, jsonEscape(chainID))), w, n, err)
-	wire.WriteTo([]byte(fmt.Sprintf(`,"tx":[%v,{"inputs":[`, TxTypeBond)), w, n, err)
-	for i, in := range tx.Inputs {
-		in.WriteSignBytes(w, n, err)
-		if i != len(tx.Inputs)-1 {
-			wire.WriteTo([]byte(","), w, n, err)
-		}
-	}
-	wire.WriteTo([]byte(fmt.Sprintf(`],"pub_key":`)), w, n, err)
-	wire.WriteTo(wire.JSONBytes(tx.PubKey), w, n, err)
-	wire.WriteTo([]byte(`,"unbond_to":[`), w, n, err)
-	for i, out := range tx.UnbondTo {
-		out.WriteSignBytes(w, n, err)
-		if i != len(tx.UnbondTo)-1 {
-			wire.WriteTo([]byte(","), w, n, err)
-		}
-	}
-	wire.WriteTo([]byte(`]}]}`), w, n, err)
-}
-
-func (tx *BondTx) String() string {
-	return fmt.Sprintf("BondTx{%v: %v -> %v}", tx.PubKey, tx.Inputs, tx.UnbondTo)
-}
-
-//-----------------------------------------------------------------------------
-
-type UnbondTx struct {
-	Address   acm.Address
-	Height    int
-	Signature acm.Signature
-}
-
-func (tx *UnbondTx) WriteSignBytes(chainID string, w io.Writer, n *int, err *error) {
-	wire.WriteTo([]byte(fmt.Sprintf(`{"chain_id":%s`, jsonEscape(chainID))), w, n, err)
-	wire.WriteTo([]byte(fmt.Sprintf(`,"tx":[%v,{"address":"%s","height":%v}]}`, TxTypeUnbond, tx.Address, tx.Height)), w, n, err)
-}
-
-func (tx *UnbondTx) String() string {
-	return fmt.Sprintf("UnbondTx{%s,%v,%v}", tx.Address, tx.Height, tx.Signature)
-}
-
-//-----------------------------------------------------------------------------
-
-type RebondTx struct {
-	Address   acm.Address
-	Height    int
-	Signature acm.Signature
-}
-
-func (tx *RebondTx) WriteSignBytes(chainID string, w io.Writer, n *int, err *error) {
-	wire.WriteTo([]byte(fmt.Sprintf(`{"chain_id":%s`, jsonEscape(chainID))), w, n, err)
-	wire.WriteTo([]byte(fmt.Sprintf(`,"tx":[%v,{"address":"%s","height":%v}]}`, TxTypeRebond, tx.Address, tx.Height)), w, n, err)
-}
-
-func (tx *RebondTx) String() string {
-	return fmt.Sprintf("RebondTx{%s,%v,%v}", tx.Address, tx.Height, tx.Signature)
-}
-
-//-----------------------------------------------------------------------------
-
-type PermissionsTx struct {
-	Input    *TxInput
-	PermArgs ptypes.PermArgs
-}
-
-func (tx *PermissionsTx) WriteSignBytes(chainID string, w io.Writer, n *int, err *error) {
-	wire.WriteTo([]byte(fmt.Sprintf(`{"chain_id":%s`, jsonEscape(chainID))), w, n, err)
-	wire.WriteTo([]byte(fmt.Sprintf(`,"tx":[%v,{"args":"`, TxTypePermissions)), w, n, err)
-	wire.WriteJSON(&tx.PermArgs, w, n, err)
-	wire.WriteTo([]byte(`","input":`), w, n, err)
-	tx.Input.WriteSignBytes(w, n, err)
-	wire.WriteTo([]byte(`}]}`), w, n, err)
-}
-
-func (tx *PermissionsTx) String() string {
-	return fmt.Sprintf("PermissionsTx{%v -> %v}", tx.Input, tx.PermArgs)
-}
-
-//-----------------------------------------------------------------------------
 
 func TxHash(chainID string, tx Tx) []byte {
 	signBytes := acm.SignBytes(chainID, tx)
@@ -401,24 +160,47 @@ func TxHash(chainID string, tx Tx) []byte {
 	return hasher.Sum(nil)
 }
 
-//-----------------------------------------------------------------------------
-
 func GenerateReceipt(chainId string, tx Tx) Receipt {
 	receipt := Receipt{
-		TxHash: TxHash(chainId, tx),
+		TxHash: tx.Hash(chainId),
 	}
 	if callTx, ok := tx.(*CallTx); ok {
 		receipt.CreatesContract = callTx.Address == nil
 		if receipt.CreatesContract {
-			receipt.ContractAddr = acm.NewContractAddress(callTx.Input.Address, callTx.Input.Sequence)
+			receipt.ContractAddress = acm.NewContractAddress(callTx.Input.Address, callTx.Input.Sequence)
 		} else {
-			receipt.ContractAddr = *callTx.Address
+			receipt.ContractAddress = *callTx.Address
 		}
 	}
 	return receipt
 }
 
+type ErrTxInvalidString struct {
+	Msg string
+}
+
+func (e ErrTxInvalidString) Error() string {
+	return e.Msg
+}
+
+type ErrTxInvalidSequence struct {
+	Got      uint64
+	Expected uint64
+}
+
+func (e ErrTxInvalidSequence) Error() string {
+	return fmt.Sprintf("Error invalid sequence. Got %d, expected %d", e.Got, e.Expected)
+}
+
 //--------------------------------------------------------------------------------
+
+func copyInputs(inputs []*TxInput) []TxInput {
+	inputsCopy := make([]TxInput, len(inputs))
+	for i, input := range inputs {
+		inputsCopy[i] = *input
+	}
+	return inputsCopy
+}
 
 // Contract: This function is deterministic and completely reversible.
 func jsonEscape(str string) string {

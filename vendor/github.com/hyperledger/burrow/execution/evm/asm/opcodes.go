@@ -16,8 +16,6 @@ package asm
 
 import (
 	"fmt"
-
-	"gopkg.in/fatih/set.v0"
 )
 
 type OpCode byte
@@ -51,6 +49,9 @@ const (
 	XOR
 	NOT
 	BYTE
+	SHL
+	SHR
+	SAR
 
 	SHA3 = 0x20
 )
@@ -70,6 +71,8 @@ const (
 	GASPRICE_DEPRECATED
 	EXTCODESIZE
 	EXTCODECOPY
+	RETURNDATASIZE
+	RETURNDATACOPY
 )
 
 const (
@@ -184,6 +187,9 @@ const (
 	DELEGATECALL
 
 	// 0x70 range - other
+	STATICCALL   = 0xfa
+	REVERT       = 0xfd
+	INVALID      = 0xfe
 	SELFDESTRUCT = 0xff
 )
 
@@ -212,6 +218,9 @@ var opCodeNames = map[OpCode]string{
 	OR:     "OR",
 	XOR:    "XOR",
 	BYTE:   "BYTE",
+	SHL:    "SHL",
+	SHR:    "SHR",
+	SAR:    "SAR",
 	ADDMOD: "ADDMOD",
 	MULMOD: "MULMOD",
 
@@ -240,6 +249,8 @@ var opCodeNames = map[OpCode]string{
 	GASLIMIT:              "GASLIMIT",
 	EXTCODESIZE:           "EXTCODESIZE",
 	EXTCODECOPY:           "EXTCODECOPY",
+	RETURNDATASIZE:        "RETURNDATASIZE",
+	RETURNDATACOPY:        "RETURNDATACOPY",
 
 	// 0x50 range - 'storage' and execution
 	POP:      "POP",
@@ -334,8 +345,10 @@ var opCodeNames = map[OpCode]string{
 	RETURN:       "RETURN",
 	CALLCODE:     "CALLCODE",
 	DELEGATECALL: "DELEGATECALL",
-
+	STATICCALL:   "STATICCALL",
 	// 0x70 range - other
+	REVERT:       "REVERT",
+	INVALID:      "INVALID",
 	SELFDESTRUCT: "SELFDESTRUCT",
 }
 
@@ -365,23 +378,4 @@ func (o OpCode) Pushes() int {
 		return int(o - PUSH1 + 1)
 	}
 	return 0
-}
-
-//-----------------------------------------------------------------------------
-
-func AnalyzeJumpDests(code []byte) (dests *set.Set) {
-	dests = set.New()
-
-	for pc := uint64(0); pc < uint64(len(code)); pc++ {
-		var op OpCode = OpCode(code[pc])
-		switch op {
-		case PUSH1, PUSH2, PUSH3, PUSH4, PUSH5, PUSH6, PUSH7, PUSH8, PUSH9, PUSH10, PUSH11, PUSH12, PUSH13, PUSH14, PUSH15, PUSH16, PUSH17, PUSH18, PUSH19, PUSH20, PUSH21, PUSH22, PUSH23, PUSH24, PUSH25, PUSH26, PUSH27, PUSH28, PUSH29, PUSH30, PUSH31, PUSH32:
-			a := uint64(op) - uint64(PUSH1) + 1
-
-			pc += a
-		case JUMPDEST:
-			dests.Add(pc)
-		}
-	}
-	return
 }

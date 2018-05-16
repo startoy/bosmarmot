@@ -9,7 +9,7 @@ import (
 	"github.com/hyperledger/burrow/client"
 	"github.com/hyperledger/burrow/client/rpc"
 	"github.com/hyperledger/burrow/keys"
-	"github.com/hyperledger/burrow/logging/loggers"
+	"github.com/hyperledger/burrow/logging"
 	"github.com/hyperledger/burrow/txs"
 	"github.com/monax/bosmarmot/monax/definitions"
 	"github.com/monax/bosmarmot/monax/log"
@@ -40,8 +40,8 @@ func SendJob(send *definitions.Send, do *definitions.Do) (string, error) {
 		"amount":      send.Amount,
 	}).Info("Sending Transaction")
 
-	monaxNodeClient := client.NewBurrowNodeClient(do.ChainURL, loggers.NewNoopInfoTraceLogger())
-	monaxKeyClient := keys.NewKeyClient(do.Signer, loggers.NewNoopInfoTraceLogger())
+	monaxNodeClient := client.NewBurrowNodeClient(do.ChainURL, logging.NewNoopLogger())
+	monaxKeyClient := keys.NewKeyClient(do.Signer, logging.NewNoopLogger())
 	tx, err := rpc.Send(monaxNodeClient, monaxKeyClient, do.PublicKey, send.Source, send.Destination, send.Amount, send.Nonce)
 	if err != nil {
 		return util.MintChainErrorHandler(do, err)
@@ -154,8 +154,8 @@ func registerNameTx(name *definitions.RegisterName, do *definitions.Do) (string,
 		"amount": name.Amount,
 	}).Info("NameReg Transaction")
 
-	monaxNodeClient := client.NewBurrowNodeClient(do.ChainURL, loggers.NewNoopInfoTraceLogger())
-	monaxKeyClient := keys.NewKeyClient(do.Signer, loggers.NewNoopInfoTraceLogger())
+	monaxNodeClient := client.NewBurrowNodeClient(do.ChainURL, logging.NewNoopLogger())
+	monaxKeyClient := keys.NewKeyClient(do.Signer, logging.NewNoopLogger())
 	tx, err := rpc.Name(monaxNodeClient, monaxKeyClient, do.PublicKey, name.Source, name.Amount, name.Nonce, name.Fee, name.Name, name.Data)
 	if err != nil {
 		return util.MintChainErrorHandler(do, err)
@@ -198,8 +198,8 @@ func PermissionJob(perm *definitions.Permission, do *definitions.Do) (string, er
 	//arg := fmt.Sprintf("%s:%s", args[0], args[1])
 	//log.WithField(perm.Action, arg).Info("Setting Permissions")
 
-	monaxNodeClient := client.NewBurrowNodeClient(do.ChainURL, loggers.NewNoopInfoTraceLogger())
-	monaxKeyClient := keys.NewKeyClient(do.Signer, loggers.NewNoopInfoTraceLogger())
+	monaxNodeClient := client.NewBurrowNodeClient(do.ChainURL, logging.NewNoopLogger())
+	monaxKeyClient := keys.NewKeyClient(do.Signer, logging.NewNoopLogger())
 	tx, err := rpc.Permissions(monaxNodeClient, monaxKeyClient, do.PublicKey, perm.Source, perm.Nonce, perm.Action,
 		perm.Target, perm.PermissionFlag, perm.Role, perm.Value)
 	if err != nil {
@@ -233,8 +233,8 @@ func BondJob(bond *definitions.Bond, do *definitions.Do) (string, error) {
 		"amount":     bond.Amount,
 	}).Infof("Bond Transaction")
 
-	monaxNodeClient := client.NewBurrowNodeClient(do.ChainURL, loggers.NewNoopInfoTraceLogger())
-	monaxKeyClient := keys.NewKeyClient(do.Signer, loggers.NewNoopInfoTraceLogger())
+	monaxNodeClient := client.NewBurrowNodeClient(do.ChainURL, logging.NewNoopLogger())
+	monaxKeyClient := keys.NewKeyClient(do.Signer, logging.NewNoopLogger())
 	tx, err := rpc.Bond(monaxNodeClient, monaxKeyClient, do.PublicKey, bond.Account, bond.Amount, bond.Nonce)
 	if err != nil {
 		return util.MintChainErrorHandler(do, err)
@@ -331,8 +331,8 @@ func RebondJob(rebond *definitions.Rebond, do *definitions.Do) (string, error) {
 func txFinalize(do *definitions.Do, tx interface{}) (string, error) {
 	var result string
 
-	nodeClient := client.NewBurrowNodeClient(do.ChainURL, loggers.NewNoopInfoTraceLogger())
-	keyClient := keys.NewKeyClient(do.Signer, loggers.NewNoopInfoTraceLogger())
+	nodeClient := client.NewBurrowNodeClient(do.ChainURL, logging.NewNoopLogger())
+	keyClient := keys.NewKeyClient(do.Signer, logging.NewNoopLogger())
 	_, chainID, _, err := nodeClient.ChainId()
 	if err != nil {
 		return "", err

@@ -21,10 +21,10 @@ func NewDeterministicGenesis(seed int64) *deterministicGenesis {
 }
 
 func (dg *deterministicGenesis) GenesisDoc(numAccounts int, randBalance bool, minBalance uint64, numValidators int,
-	randBonded bool, minBonded int64) (*GenesisDoc, []acm.PrivateAccount) {
+	randBonded bool, minBonded int64) (*GenesisDoc, []acm.AddressableSigner, []acm.AddressableSigner) {
 
 	accounts := make([]Account, numAccounts)
-	privAccounts := make([]acm.PrivateAccount, numAccounts)
+	privAccounts := make([]acm.AddressableSigner, numAccounts)
 	defaultPerms := permission.DefaultAccountPermissions
 	for i := 0; i < numAccounts; i++ {
 		account, privAccount := dg.Account(randBalance, minBalance)
@@ -38,8 +38,10 @@ func (dg *deterministicGenesis) GenesisDoc(numAccounts int, randBalance bool, mi
 		privAccounts[i] = privAccount
 	}
 	validators := make([]Validator, numValidators)
+	privValidators := make([]acm.AddressableSigner, numValidators)
 	for i := 0; i < numValidators; i++ {
 		validator := acm.GeneratePrivateAccountFromSecret(fmt.Sprintf("val_%v", i))
+		privValidators[i] = validator
 		validators[i] = Validator{
 			BasicAccount: BasicAccount{
 				Address:   validator.Address(),
@@ -59,11 +61,11 @@ func (dg *deterministicGenesis) GenesisDoc(numAccounts int, randBalance bool, mi
 		GenesisTime: time.Unix(1506172037, 0),
 		Accounts:    accounts,
 		Validators:  validators,
-	}, privAccounts
+	}, privAccounts, privValidators
 
 }
 
-func (dg *deterministicGenesis) Account(randBalance bool, minBalance uint64) (acm.Account, acm.PrivateAccount) {
+func (dg *deterministicGenesis) Account(randBalance bool, minBalance uint64) (acm.Account, acm.AddressableSigner) {
 	privateKey, err := acm.GeneratePrivateKey(dg.random)
 	if err != nil {
 		panic(fmt.Errorf("could not generate private key deterministically"))

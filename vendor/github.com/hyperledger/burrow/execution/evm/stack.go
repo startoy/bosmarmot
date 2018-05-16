@@ -17,6 +17,8 @@ package evm
 import (
 	"fmt"
 
+	"math/big"
+
 	. "github.com/hyperledger/burrow/binary"
 )
 
@@ -78,6 +80,15 @@ func (st *Stack) PushU64(i uint64) {
 	st.Push(Uint64ToWord256(i))
 }
 
+// Pushes the bigInt as a Word256 encoding negative values in 32-byte twos complement and returns the encoded result
+func (st *Stack) PushBigInt(bigInt *big.Int) Word256 {
+	word := LeftPadWord256(U256(bigInt).Bytes())
+	st.Push(word)
+	return word
+}
+
+// Pops
+
 func (st *Stack) Pop() Word256 {
 	st.useGas(GasStackOp)
 	if st.ptr == 0 {
@@ -92,14 +103,29 @@ func (st *Stack) PopBytes() []byte {
 	return st.Pop().Bytes()
 }
 
-func (st *Stack) Pop64() int64 {
+func (st *Stack) Pop64() (int64, error) {
 	d := st.Pop()
-	return Int64FromWord256(d)
+	if Is64BitOverflow(d) {
+		return 0, fmt.Errorf("int64 overflow from word: %v", d)
+	}
+	return Int64FromWord256(d), nil
 }
 
-func (st *Stack) PopU64() uint64 {
+func (st *Stack) PopU64() (uint64, error) {
 	d := st.Pop()
-	return Uint64FromWord256(d)
+	if Is64BitOverflow(d) {
+		return 0, fmt.Errorf("uint64 overflow from word: %v", d)
+	}
+	return Uint64FromWord256(d), nil
+}
+
+func (st *Stack) PopBigIntSigned() *big.Int {
+	return S256(st.PopBigInt())
+}
+
+func (st *Stack) PopBigInt() *big.Int {
+	d := st.Pop()
+	return new(big.Int).SetBytes(d[:])
 }
 
 func (st *Stack) Len() int {
@@ -148,4 +174,13 @@ func (st *Stack) Print(n int) {
 		fmt.Println("-- empty --")
 	}
 	fmt.Println("#############")
+}
+
+func Is64BitOverflow(word Word256) bool {
+	for i := 0; i < len(word)-8; i++ {
+		if word[i] != 0 {
+			return true
+		}
+	}
+	return false
 }

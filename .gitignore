@@ -8,7 +8,7 @@ bin/
 *.log
 .burrow
 
-addrbook.json
 epm.output.json
 .gopath_burrow
 monax/tests/**/abi/
+node_modules/

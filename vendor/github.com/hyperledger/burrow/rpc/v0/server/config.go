@@ -16,7 +16,6 @@ package server
 
 type (
 	ServerConfig struct {
-		ChainId   string
 		Bind      Bind      `toml:"bind"`
 		TLS       TLS       `toml:"TLS"`
 		CORS      CORS      `toml:"CORS"`
@@ -63,7 +62,7 @@ func DefaultServerConfig() *ServerConfig {
 	kp := ""
 	return &ServerConfig{
 		Bind: Bind{
-			Address: "",
+			Address: "localhost",
 			Port:    1337,
 		},
 		TLS: TLS{TLS: false,

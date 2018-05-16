@@ -11,6 +11,8 @@ SHELL := /bin/bash
 REPO := $(shell pwd)
 GO_FILES := $(shell go list -f "{{.Dir}}" ./...)
 GOPACKAGES_NOVENDOR := $(shell go list ./...)
+COMMIT := $(shell git rev-parse --short HEAD)
+BURROW_PACKAGE := github.com/hyperledger/burrow
 
 ### Integration test binaries
 # We make the relevant targets for building/fetching these depend on the Makefile itself - if unnecessary rebuilds
@@ -32,25 +34,55 @@ check:
 fix:
 	@goimports -l -w ${GO_FILES}
 
-# Run testsGOFILES_NOVENDOR
-.PHONY:	test
-test: check bin/solc
+.PHONY: test_js
+test_js:
+	@cd legacy-contracts.js && npm test
+	#re-enable after fixing a few things
+	#@cd legacy-db.js && npm test
+
+# Run tests
+.PHONY:	test_bos
+test_bos: check bin/solc
 	@scripts/bin_wrapper.sh go test ${GOPACKAGES_NOVENDOR}
+
+.PHONY:	test
+test: test_bos
 
 # Run tests for development (noisy)
 .PHONY:	test_dev
 test_dev:
 	@go test -v ${GOPACKAGES_NOVENDOR}
 
+# Install dependency and make legacy-contracts depend on legacy-db by relative path
+.PHONY: npm_install
+npm_install:
+	@cd legacy-db.js && npm install
+	@cd legacy-contracts.js && npm install --save ../legacy-db.js
+	@cd legacy-contracts.js && npm install
+
 # Run tests including integration tests
-.PHONY:	test_integration
-test_integration: build_bin bin/solc bin/burrow
+.PHONY:	test_integration_bos
+test_integration_bos: build_bin bin/solc bin/burrow
 	@scripts/bin_wrapper.sh monax/tests/test_jobs.sh
 
+.PHONY:	test_integration_js
+test_integration_js: build_bin bin/solc bin/burrow
+	@cd legacy-contracts.js && TEST=record ../scripts/bin_wrapper.sh npm test
+
+.PHONY:	test_integration
+test_integration: test_integration_bos test_integration_js
+
 # Use a provided/local Burrow
-.PHONY:	test_integration_no_burrow
-test_integration_no_burrow: build_bin bin/solc
+.PHONY:	test_integration_js_no_burrow
+test_integration_js_no_burrow: build_bin bin/solc
+	@cd legacy-contracts.js && TEST=record ../scripts/bin_wrapper.sh npm test
+
+.PHONY:	test_integration_bos_no_burrow
+test_integration_bos_no_burrow: build_bin bin/solc
 	@scripts/bin_wrapper.sh monax/tests/test_jobs.sh
+
+PHONY:	test_integration_no_burrow
+test_integration_no_burrow: test_integration_bos_no_burrow test_integration_js_no_burrow
 
 ### Vendoring
 
@@ -62,7 +94,6 @@ erase_vendor:
 # install vendor uses dep to install vendored dependencies
 .PHONY: reinstall_vendor
 reinstall_vendor: erase_vendor
-	@go get -u github.com/golang/dep/cmd/dep
 	@dep ensure -v
 
 # delete the vendor directy and pull back using dep lock and constraints file
@@ -76,23 +107,36 @@ ensure_vendor: reinstall_vendor
 
 .PHONY: build_bin
 build_bin:
-	@go build -o bin/bos ./monax/cmd/bos
-	@go build -o bin/monax-keys ./keys/cmd/monax-keys
+	@go build -ldflags "-X github.com/monax/bosmarmot/project.commit=${COMMIT}" -o bin/bos ./monax/cmd/bos
+	@go build -ldflags "-X github.com/monax/bosmarmot/project.commit=${COMMIT}" -o bin/monax-keys ./keys/cmd/monax-keys
+
 
 bin/solc: ./scripts/deps/solc.sh
 	@mkdir -p bin
 	@scripts/deps/solc.sh bin/solc
 	@touch bin/solc
 
+scripts/deps/burrow.sh: Gopkg.lock
+	@go get -u github.com/golang/dep/cmd/dep
+	@scripts/deps/burrow-gen.sh > scripts/deps/burrow.sh
+	@chmod +x scripts/deps/burrow.sh
+
+.PHONY: burrow_local
+burrow_local:
+	@rm -rf .gopath_burrow
+	@mkdir -p .gopath_burrow/src/${BURROW_PACKAGE}
+	@cp -r ${GOPATH}/src/${BURROW_PACKAGE}/. .gopath_burrow/src/${BURROW_PACKAGE}
 
 bin/burrow: ./scripts/deps/burrow.sh
+	mkdir -p bin
 	@GOPATH="${REPO}/.gopath_burrow" \
-	scripts/go_build_revision.sh \
+	scripts/go_get_revision.sh \
 	https://github.com/hyperledger/burrow.git \
-	github.com/hyperledger/burrow \
+	${BURROW_PACKAGE} \
 	$(shell ./scripts/deps/burrow.sh) \
-	cmd/burrow \
-	bin/burrow
+	"make build_db" && \
+	cp .gopath_burrow/src/${BURROW_PACKAGE}/bin/burrow ./bin/burrow
+
 
 # Build all the things
 .PHONY: build

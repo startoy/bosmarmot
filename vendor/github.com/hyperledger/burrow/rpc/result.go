@@ -72,7 +72,7 @@ type ResultGetBlock struct {
 }
 
 type ResultStatus struct {
-	NodeInfo          *p2p.NodeInfo
+	NodeInfo          p2p.NodeInfo
 	GenesisHash       []byte
 	PubKey            acm.PublicKey
 	LatestBlockHash   []byte
@@ -97,7 +97,7 @@ type ResultUnsubscribe struct {
 }
 
 type Peer struct {
-	NodeInfo   *p2p.NodeInfo
+	NodeInfo   p2p.NodeInfo
 	IsOutbound bool
 }
 
@@ -135,6 +135,21 @@ type ResultGetAccount struct {
 	Account *acm.ConcreteAccount
 }
 
+type AccountHumanReadable struct {
+	Address     acm.Address
+	PublicKey   acm.PublicKey
+	Sequence    uint64
+	Balance     uint64
+	Code        []string
+	StorageRoot string
+	Permissions []string
+	Roles       []string
+}
+
+type ResultGetAccountHumanReadable struct {
+	Account *AccountHumanReadable
+}
+
 type ResultBroadcastTx struct {
 	txs.Receipt
 }
@@ -167,8 +182,7 @@ type ResultSignTx struct {
 }
 
 type ResultEvent struct {
-	Event string
-	// TODO: move ResultEvent sum type here
+	Event         string
 	TMEventData   *tm_types.TMEventData     `json:",omitempty"`
 	EventDataTx   *exe_events.EventDataTx   `json:",omitempty"`
 	EventDataCall *evm_events.EventDataCall `json:",omitempty"`

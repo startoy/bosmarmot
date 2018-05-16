@@ -22,20 +22,24 @@ func EventStringRebond() string                        { return "Rebond" }
 
 // All txs fire EventDataTx, but only CallTx might have Return or Exception
 type EventDataTx struct {
-	Tx        txs.Tx `json:"tx"`
-	Return    []byte `json:"return"`
-	Exception string `json:"exception"`
+	Tx        txs.Tx
+	Return    []byte
+	Exception string
 }
 
 // For re-use
 var sendTxQuery = event.NewQueryBuilder().
-	AndEquals(event.MessageTypeKey, reflect.TypeOf(EventDataTx{}).String()).
+	AndEquals(event.MessageTypeKey, reflect.TypeOf(&EventDataTx{}).String()).
 	AndEquals(event.TxTypeKey, reflect.TypeOf(&txs.SendTx{}).String())
 
+var callTxQuery = event.NewQueryBuilder().
+	AndEquals(event.MessageTypeKey, reflect.TypeOf(&EventDataTx{}).String()).
+	AndEquals(event.TxTypeKey, reflect.TypeOf(&txs.CallTx{}).String())
+
 type eventDataTx struct {
-	Tx        txs.Wrapper `json:"tx"`
-	Return    []byte      `json:"return"`
-	Exception string      `json:"exception"`
+	Tx        txs.Wrapper
+	Return    []byte
+	Exception string
 }
 
 func (edTx EventDataTx) MarshalJSON() ([]byte, error) {
@@ -60,7 +64,6 @@ func (edTx *EventDataTx) UnmarshalJSON(data []byte) error {
 }
 
 // Publish/Subscribe
-
 func SubscribeAccountOutputSendTx(ctx context.Context, subscribable event.Subscribable, subscriber string,
 	address acm.Address, txHash []byte, ch chan<- *txs.SendTx) error {
 
@@ -68,8 +71,8 @@ func SubscribeAccountOutputSendTx(ctx context.Context, subscribable event.Subscr
 		AndEquals(event.TxHashKey, hex.EncodeUpperToString(txHash))
 
 	return event.SubscribeCallback(ctx, subscribable, subscriber, query, func(message interface{}) bool {
-		if eventDataCall, ok := message.(*EventDataTx); ok {
-			if sendTx, ok := eventDataCall.Tx.(*txs.SendTx); ok {
+		if edt, ok := message.(*EventDataTx); ok {
+			if sendTx, ok := edt.Tx.(*txs.SendTx); ok {
 				ch <- sendTx
 			}
 		}

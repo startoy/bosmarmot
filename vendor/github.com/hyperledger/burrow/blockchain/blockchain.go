@@ -15,18 +15,22 @@
 package blockchain
 
 import (
-	"time"
-
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"sync"
+	"time"
 
 	acm "github.com/hyperledger/burrow/account"
 	"github.com/hyperledger/burrow/genesis"
+	"github.com/hyperledger/burrow/logging"
+	dbm "github.com/tendermint/tmlibs/db"
 )
+
+var stateKey = []byte("BlockchainState")
 
 // Immutable Root of blockchain
 type Root interface {
-	// ChainID precomputed from GenesisDoc
-	ChainID() string
 	// GenesisHash precomputed from GenesisDoc
 	GenesisHash() []byte
 	GenesisDoc() genesis.GenesisDoc
@@ -34,6 +38,8 @@ type Root interface {
 
 // Immutable pointer to the current tip of the blockchain
 type Tip interface {
+	// ChainID precomputed from GenesisDoc
+	ChainID() string
 	// All Last* references are to the block last committed
 	LastBlockHeight() uint64
 	LastBlockTime() time.Time
@@ -46,6 +52,8 @@ type Tip interface {
 
 // Burrow's portion of the Blockchain state
 type Blockchain interface {
+	// Read locker
+	sync.Locker
 	Root
 	Tip
 	// Returns an immutable copy of the tip
@@ -56,16 +64,16 @@ type Blockchain interface {
 
 type MutableBlockchain interface {
 	Blockchain
-	CommitBlock(blockTime time.Time, blockHash, appHash []byte)
+	CommitBlock(blockTime time.Time, blockHash, appHash []byte) error
 }
 
 type root struct {
-	chainID     string
 	genesisHash []byte
 	genesisDoc  genesis.GenesisDoc
 }
 
 type tip struct {
+	chainID               string
 	lastBlockHeight       uint64
 	lastBlockTime         time.Time
 	lastBlockHash         []byte
@@ -74,6 +82,7 @@ type tip struct {
 
 type blockchain struct {
 	sync.RWMutex
+	db dbm.DB
 	*root
 	*tip
 	validators []acm.Validator
@@ -84,8 +93,38 @@ var _ Tip = &blockchain{}
 var _ Blockchain = &blockchain{}
 var _ MutableBlockchain = &blockchain{}
 
+type PersistedState struct {
+	AppHashAfterLastBlock []byte
+	LastBlockHeight       uint64
+	GenesisDoc            genesis.GenesisDoc
+}
+
+func LoadOrNewBlockchain(db dbm.DB, genesisDoc *genesis.GenesisDoc,
+	logger *logging.Logger) (*blockchain, error) {
+
+	logger = logger.WithScope("LoadOrNewBlockchain")
+	logger.InfoMsg("Trying to load blockchain state from database",
+		"database_key", stateKey)
+	blockchain, err := loadBlockchain(db)
+	if err != nil {
+		return nil, fmt.Errorf("error loading blockchain state from database: %v", err)
+	}
+	if blockchain != nil {
+		dbHash := blockchain.genesisDoc.Hash()
+		argHash := genesisDoc.Hash()
+		if !bytes.Equal(dbHash, argHash) {
+			return nil, fmt.Errorf("GenesisDoc passed to LoadOrNewBlockchain has hash: 0x%X, which does not "+
+				"match the one found in database: 0x%X", argHash, dbHash)
+		}
+		return blockchain, nil
+	}
+
+	logger.InfoMsg("No existing blockchain state found in database, making new blockchain")
+	return newBlockchain(db, genesisDoc), nil
+}
+
 // Pointer to blockchain state initialised from genesis
-func NewBlockchain(genesisDoc *genesis.GenesisDoc) *blockchain {
+func newBlockchain(db dbm.DB, genesisDoc *genesis.GenesisDoc) *blockchain {
 	var validators []acm.Validator
 	for _, gv := range genesisDoc.Validators {
 		validators = append(validators, acm.ConcreteValidator{
@@ -95,40 +134,63 @@ func NewBlockchain(genesisDoc *genesis.GenesisDoc) *blockchain {
 	}
 	root := NewRoot(genesisDoc)
 	return &blockchain{
-		root: root,
-		tip: &tip{
-			lastBlockTime:         root.genesisDoc.GenesisTime,
-			appHashAfterLastBlock: root.genesisHash,
-		},
+		db:         db,
+		root:       root,
+		tip:        NewTip(genesisDoc.ChainID(), root.genesisDoc.GenesisTime, root.genesisHash),
 		validators: validators,
 	}
 }
 
+func loadBlockchain(db dbm.DB) (*blockchain, error) {
+	buf := db.Get(stateKey)
+	if len(buf) == 0 {
+		return nil, nil
+	}
+	persistedState, err := Decode(buf)
+	if err != nil {
+		return nil, err
+	}
+	blockchain := newBlockchain(db, &persistedState.GenesisDoc)
+	blockchain.lastBlockHeight = persistedState.LastBlockHeight
+	blockchain.appHashAfterLastBlock = persistedState.AppHashAfterLastBlock
+	return blockchain, nil
+}
+
 func NewRoot(genesisDoc *genesis.GenesisDoc) *root {
 	return &root{
-		chainID:     genesisDoc.ChainID(),
 		genesisHash: genesisDoc.Hash(),
 		genesisDoc:  *genesisDoc,
 	}
 }
 
-// Create
-func NewTip(lastBlockHeight uint64, lastBlockTime time.Time, lastBlockHash []byte, appHashAfterLastBlock []byte) *tip {
+// Create genesis Tip
+func NewTip(chainID string, genesisTime time.Time, genesisHash []byte) *tip {
 	return &tip{
-		lastBlockHeight:       lastBlockHeight,
-		lastBlockTime:         lastBlockTime,
-		lastBlockHash:         lastBlockHash,
-		appHashAfterLastBlock: appHashAfterLastBlock,
+		chainID:               chainID,
+		lastBlockTime:         genesisTime,
+		appHashAfterLastBlock: genesisHash,
 	}
 }
 
-func (bc *blockchain) CommitBlock(blockTime time.Time, blockHash, appHash []byte) {
+func (bc *blockchain) CommitBlock(blockTime time.Time, blockHash, appHash []byte) error {
 	bc.Lock()
 	defer bc.Unlock()
 	bc.lastBlockHeight += 1
 	bc.lastBlockTime = blockTime
 	bc.lastBlockHash = blockHash
 	bc.appHashAfterLastBlock = appHash
+	return bc.save()
+}
+
+func (bc *blockchain) save() error {
+	if bc.db != nil {
+		encodedState, err := bc.Encode()
+		if err != nil {
+			return err
+		}
+		bc.db.SetSync(stateKey, encodedState)
+	}
+	return nil
 }
 
 func (bc *blockchain) Root() Root {
@@ -152,8 +214,26 @@ func (bc *blockchain) Validators() []acm.Validator {
 	return vs
 }
 
-func (r *root) ChainID() string {
-	return r.chainID
+func (bc *blockchain) Encode() ([]byte, error) {
+	persistedState := &PersistedState{
+		GenesisDoc:            bc.genesisDoc,
+		AppHashAfterLastBlock: bc.appHashAfterLastBlock,
+		LastBlockHeight:       bc.lastBlockHeight,
+	}
+	encodedState, err := json.Marshal(persistedState)
+	if err != nil {
+		return nil, err
+	}
+	return encodedState, nil
+}
+
+func Decode(encodedState []byte) (*PersistedState, error) {
+	persistedState := new(PersistedState)
+	err := json.Unmarshal(encodedState, persistedState)
+	if err != nil {
+		return nil, err
+	}
+	return persistedState, nil
 }
 
 func (r *root) GenesisHash() []byte {
@@ -162,6 +242,10 @@ func (r *root) GenesisHash() []byte {
 
 func (r *root) GenesisDoc() genesis.GenesisDoc {
 	return r.genesisDoc
+}
+
+func (t *tip) ChainID() string {
+	return t.chainID
 }
 
 func (t *tip) LastBlockHeight() uint64 {

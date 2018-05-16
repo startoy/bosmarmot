@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os/exec"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -51,29 +52,67 @@ contract c {
 
 }
 
+// The solidity 0.4.21 compiler appends something called auxdata to the end of the bin file (this is visible with
+// solc --asm). This is a swarm hash of the metadata, and it's always at the end. This includes the path of the
+// solidity source file, so it will differ.
+func trimAuxdata(bin string) string {
+	return bin[:len(bin)-86]
+}
+
+func objectName(contract string) string {
+	if contract == "" {
+		return ""
+	}
+	parts := strings.Split(strings.TrimSpace(contract), ":")
+	return parts[len(parts)-1]
+}
+
+func extractWarningJSON(output string) (warning string, json string) {
+	jsonBeginsCertainly := strings.Index(output, `{"contracts":`)
+
+	if jsonBeginsCertainly > 0 {
+		warning = output[:jsonBeginsCertainly]
+		json = output[jsonBeginsCertainly:]
+	} else {
+		json = output
+	}
+	return
+}
+
+func fixupCompilersResponse(resp *perform.Response, filename string) {
+	for i := range resp.Objects {
+		resp.Objects[i].Bytecode = trimAuxdata(resp.Objects[i].Bytecode)
+	}
+	// compilers changes the filename, change it back again in the warning
+	re := regexp.MustCompile("[0-9a-f]+\\.sol")
+	resp.Warning = re.ReplaceAllString(resp.Warning, filename)
+}
+
 func TestLocalMulti(t *testing.T) {
 	util.ClearCache(config.SolcScratchPath)
 	expectedSolcResponse := definitions.BlankSolcResponse()
 
-	actualOutput, err := exec.Command("solc", "--combined-json", "bin,abi", "contractImport1.sol").Output()
+	actualOutput, err := exec.Command("solc", "--combined-json", "bin,abi", "contractImport1.sol").CombinedOutput()
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = json.Unmarshal([]byte(strings.TrimSpace(string(actualOutput))), expectedSolcResponse)
+
+	warning, responseJSON := extractWarningJSON(strings.TrimSpace(string(actualOutput)))
+	err = json.Unmarshal([]byte(responseJSON), expectedSolcResponse)
 
 	respItemArray := make([]perform.ResponseItem, 0)
 
 	for contract, item := range expectedSolcResponse.Contracts {
 		respItem := perform.ResponseItem{
-			Objectname: strings.TrimSpace(contract),
-			Bytecode:   strings.TrimSpace(item.Bin),
+			Objectname: objectName(strings.TrimSpace(contract)),
+			Bytecode:   trimAuxdata(strings.TrimSpace(item.Bin)),
 			ABI:        strings.TrimSpace(item.Abi),
 		}
 		respItemArray = append(respItemArray, respItem)
 	}
 	expectedResponse := &perform.Response{
 		Objects: respItemArray,
-		Warning: "",
+		Warning: warning,
 		Version: "",
 		Error:   "",
 	}
@@ -82,6 +121,7 @@ func TestLocalMulti(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	fixupCompilersResponse(resp, "contractImport1.sol")
 	allClear := true
 	for _, object := range expectedResponse.Objects {
 		if !contains(resp.Objects, object) {
@@ -99,26 +139,27 @@ func TestLocalSingle(t *testing.T) {
 	expectedSolcResponse := definitions.BlankSolcResponse()
 
 	shellCmd := exec.Command("solc", "--combined-json", "bin,abi", "simpleContract.sol")
-	actualOutput, err := shellCmd.Output()
+	actualOutput, err := shellCmd.CombinedOutput()
 	if err != nil {
 		t.Fatal(err)
 	}
-	output := strings.TrimSpace(string(actualOutput))
-	err = json.Unmarshal([]byte(output), expectedSolcResponse)
+
+	warning, responseJSON := extractWarningJSON(strings.TrimSpace(string(actualOutput)))
+	err = json.Unmarshal([]byte(responseJSON), expectedSolcResponse)
 
 	respItemArray := make([]perform.ResponseItem, 0)
 
 	for contract, item := range expectedSolcResponse.Contracts {
 		respItem := perform.ResponseItem{
-			Objectname: strings.TrimSpace(contract),
-			Bytecode:   strings.TrimSpace(item.Bin),
+			Objectname: objectName(strings.TrimSpace(contract)),
+			Bytecode:   trimAuxdata(strings.TrimSpace(item.Bin)),
 			ABI:        strings.TrimSpace(item.Abi),
 		}
 		respItemArray = append(respItemArray, respItem)
 	}
 	expectedResponse := &perform.Response{
 		Objects: respItemArray,
-		Warning: "",
+		Warning: warning,
 		Version: "",
 		Error:   "",
 	}
@@ -127,6 +168,7 @@ func TestLocalSingle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	fixupCompilersResponse(resp, "simpleContract.sol")
 	assert.Equal(t, expectedResponse, resp)
 	util.ClearCache(config.SolcScratchPath)
 }

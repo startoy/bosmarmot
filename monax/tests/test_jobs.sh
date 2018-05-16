@@ -19,6 +19,7 @@
 bos_bin=${bos_bin:-bos}
 burrow_bin=${burrow_bin:-burrow}
 keys_bin=${keys_bin:-monax-keys}
+
 # currently we must use 'solc' as hardcoded by compilers
 solc_bin=solc
 
@@ -78,20 +79,19 @@ test_setup(){
   if [[ "$boot" = true ]]; then
     echo "Booting keys then Burrow.."
     echo "Starting keys on port $keys_port"
-    ${keys_bin} server --port ${keys_port} --dir keys > "$keys_log" 2>&1 &
+    ${keys_bin} server --port ${keys_port} --dir keys 2> "$keys_log" &
     keys_pid=$!
 
     sleep 1
     echo "Starting Burrow with tendermint port: $tendermint_port, tm RPC port: $rpc_tm_port"
     rm -rf ${burrow_root}
-    ${burrow_bin} 2> "$burrow_log" &
+    ${burrow_bin} start 2> "$burrow_log" &
     burrow_pid=$!
 
   else
     echo "Not booting Burrow or keys, but expecting Burrow to be running with tm RPC on port $rpc_tm_port and keys"\
         "to be running on port $keys_port"
   fi
-
 
   key1_addr=$(address_of "Full_0")
   key2_addr=$(address_of "Participant_0")
@@ -120,10 +120,7 @@ run_test(){
     --set "addr1=$key1_addr" --set "addr2=$key2_addr" --set "addr2_pub=$key2_pub" #--debug
   test_exit=$?
 
-  rm -rf ./abi &>/dev/null
-  rm -rf ./bin &>/dev/null
-  rm ./epm.output.json &>/dev/null
-  rm ./jobs_output.csv &>/dev/null
+  git clean -fdx ./abi ./bin ./epm.output.json ./jobs_output.csv
 
   # Reset for next run
   goto_base
@@ -175,8 +172,12 @@ perform_tests_that_should_fail(){
 test_teardown(){
   echo "Cleaning up..."
   if [[ "$boot" = true ]]; then
-    kill ${burrow_pid} > /dev/null
-    kill ${keys_pid} > /dev/null
+    kill ${burrow_pid}
+    echo "Waiting for burrow to shutdown..."
+    wait ${burrow_pid} 2> /dev/null &
+    kill ${keys_pid}
+    echo "Waiting for keys to shutdown..."
+    wait ${keys_pid} 2> /dev/null &
     rm -rf "$burrow_root"
   fi
   echo ""
